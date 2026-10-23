@@ -68,9 +68,74 @@
         .glow-active {
             animation: pulseGlow 2s infinite;
         }
+
+        .simon-btn {
+            transition: all 0.2s ease;
+        }
+        .simon-btn.active {
+            transform: scale(0.95);
+            filter: brightness(1.7);
+            box-shadow: 0 0 25px currentColor;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen justify-between pb-6">
+
+    <!-- Locked Countdown Overlay -->
+    <div id="lockOverlay" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center">
+        <div class="glass-panel p-6 rounded-3xl max-w-sm w-full border-2 border-pink-500/40 shadow-2xl relative">
+            <div class="w-16 h-16 bg-gradient-to-tr from-pink-500 to-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-pink-500/30 text-white text-3xl animate-bounce">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            
+            <h2 class="title-font text-xl font-bold text-pink-200">Büyük Sürpriz Kilitli! 💕</h2>
+            <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                Enver'in Özden'e hazırladığı hediye serüveninin açılmasına kalan süre:
+            </p>
+
+            <!-- Timer Display -->
+            <div class="grid grid-cols-4 gap-2 my-5">
+                <div class="bg-slate-900/90 p-2 rounded-xl border border-pink-500/30">
+                    <span id="timerDays" class="title-font text-lg font-bold text-pink-400 block">00</span>
+                    <span class="text-[9px] text-slate-400 uppercase font-semibold">Gün</span>
+                </div>
+                <div class="bg-slate-900/90 p-2 rounded-xl border border-pink-500/30">
+                    <span id="timerHours" class="title-font text-lg font-bold text-pink-400 block">00</span>
+                    <span class="text-[9px] text-slate-400 uppercase font-semibold">Saat</span>
+                </div>
+                <div class="bg-slate-900/90 p-2 rounded-xl border border-pink-500/30">
+                    <span id="timerMinutes" class="title-font text-lg font-bold text-pink-400 block">00</span>
+                    <span class="text-[9px] text-slate-400 uppercase font-semibold">Dakika</span>
+                </div>
+                <div class="bg-slate-900/90 p-2 rounded-xl border border-pink-500/30">
+                    <span id="timerSeconds" class="title-font text-lg font-bold text-pink-400 block">00</span>
+                    <span class="text-[9px] text-slate-400 uppercase font-semibold">Saniye</span>
+                </div>
+            </div>
+
+            <p class="text-[11px] text-rose-300/80 italic mb-4">
+                Açılış Zamanı: 24 Ekim 2026 - 19:00 ✨
+            </p>
+
+            <button onclick="openPassModal()" class="w-full py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-key text-amber-400"></i> Şifre ile Erken Giriş Yap
+            </button>
+        </div>
+    </div>
+
+    <!-- Password Bypass Modal -->
+    <div id="passModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-panel max-w-xs w-full p-5 rounded-2xl border border-pink-500/40 text-center">
+            <h3 class="title-font text-base font-bold text-pink-200 mb-2">Özel Giriş Şifresi</h3>
+            <p class="text-[11px] text-slate-300 mb-4">Erken erişim için özel şifreni gir:</p>
+            <input type="password" id="secretPassInput" placeholder="Şifrenizi yazın..." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-center text-sm focus:outline-none focus:border-pink-500 mb-3" />
+            <div class="flex gap-2">
+                <button onclick="closePassModal()" class="flex-1 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold">İptal</button>
+                <button onclick="checkSecretPass()" class="flex-1 py-2 bg-gradient-to-r from-pink-500 to-rose-600 text-white rounded-xl text-xs font-bold">Giriş Yap</button>
+            </div>
+            <p id="passError" class="text-rose-400 text-[10px] mt-2 hidden">Hatalı şifre girdin!</p>
+        </div>
+    </div>
 
     <!-- Header Navigation -->
     <header class="w-full glass-panel sticky top-0 z-40 px-4 py-3 border-b border-rose-500/30">
@@ -151,6 +216,54 @@
     </div>
 
     <script>
+        // TARGET LOCK DATE: 24 October 2026, 19:00:00 (Local Time)
+        const TARGET_DATE = new Date(2026, 9, 24, 19, 0, 0).getTime(); // Month is 0-indexed (9 = October)
+        const SECRET_PASS = "enverozden"; // Gizli Erken Giriş Şifreniz!
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const diff = TARGET_DATE - now;
+
+            if (diff <= 0 || localStorage.getItem('unlocked_by_pass_ozden') === 'true') {
+                document.getElementById('lockOverlay').classList.add('hidden');
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('timerDays').innerText = days < 10 ? '0' + days : days;
+            document.getElementById('timerHours').innerText = hours < 10 ? '0' + hours : hours;
+            document.getElementById('timerMinutes').innerText = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('timerSeconds').innerText = seconds < 10 ? '0' + seconds : seconds;
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        function openPassModal() {
+            document.getElementById('passModal').classList.remove('hidden');
+            document.getElementById('secretPassInput').focus();
+        }
+
+        function closePassModal() {
+            document.getElementById('passModal').classList.add('hidden');
+            document.getElementById('passError').classList.add('hidden');
+        }
+
+        function checkSecretPass() {
+            const input = document.getElementById('secretPassInput').value.trim().toLowerCase();
+            if (input === SECRET_PASS) {
+                localStorage.setItem('unlocked_by_pass_ozden', 'true');
+                closePassModal();
+                document.getElementById('lockOverlay').classList.add('hidden');
+            } else {
+                document.getElementById('passError').classList.remove('hidden');
+            }
+        }
+
         // Game Configurations & Custom Gifts
         const LEVELS = [
             { 
@@ -171,19 +284,19 @@
             },
             { 
                 id: 3, 
-                title: "3. Bölüm: Kar Fırtınası", 
+                title: "3. Bölüm: Buz Kulesi Tırmanışı", 
                 reward: "Büyülü Kar Küresi 🔮", 
                 icon: "fa-snowflake", 
                 desc: "İçinde kendi romantik masalımızın döndüğü ışıl ışıl büyüleyici bir kar küresi!",
-                note: "Sana her baktığımda dünyam tıpkı bu kar küresi gibi güzelleşiyor."
+                note: "Buz kulesini zirveye kadar tırmandın! Tıpkı aşkımız gibi yükseklerde."
             },
             { 
                 id: 4, 
-                title: "4. Bölüm: Işıltılı Refleks", 
+                title: "4. Bölüm: Işık Deseni Hafızası", 
                 reward: "Işıl Işıl Kolye 💎", 
                 icon: "fa-gem", 
                 desc: "Güzelliğine güzellik katacak, boynuna çok yakışacak zarafette harika bir kolye!",
-                note: "Bu kolyeyi boynuna kendi ellerimle takmak için sabırsızlanıyorum."
+                note: "Bu kolyeyi boynuna kendi hands'imle takmak için sabırsızlanıyorum."
             },
             { 
                 id: 5, 
@@ -454,115 +567,284 @@
         }
 
         // ==========================================
-        // LEVEL 3: Düşen Kar Taneleri (Kar Küresi) - YENİ!
+        // LEVEL 3: Buz Kulesi Tırmanışı / Ice Tower (Kar Küresi)
         // ==========================================
         function startLevel3(container) {
             container.innerHTML = `
                 <div class="text-center mb-1">
-                    <span class="text-[10px] bg-cyan-500/20 text-cyan-300 font-bold px-2.5 py-0.5 rounded-full border border-cyan-500/30">HIZLI REFLEKS</span>
-                    <h3 class="title-font text-base font-bold text-pink-200 mt-1">Bölüm 3: Büyülü Kar Fırtınası 🔮</h3>
-                    <p class="text-[10px] text-slate-300">Düşen kar tanelerine (❄️) dokun! Kırmızı kristallere (🔻) dokunma!</p>
-                    <div class="mt-1 text-xs font-bold text-cyan-300">Yakalanan Kar: <span id="snowScore">0</span>/8</div>
+                    <span class="text-[10px] bg-cyan-500/20 text-cyan-300 font-bold px-2.5 py-0.5 rounded-full border border-cyan-500/30">HAYATTA KALMA</span>
+                    <h3 class="title-font text-base font-bold text-pink-200 mt-1">Bölüm 3: Buz Kulesi Tırmanışı 🔮</h3>
+                    <p class="text-[10px] text-slate-300">Zıplayarak buz basamaklarını tırman! Düşmeden 15. kata ulaş!</p>
+                    <div class="mt-1 text-xs font-bold text-cyan-300">Şu Anki Kat: <span id="iceFloorScore">0</span> / 15</div>
                 </div>
-                <div id="snowArea" class="w-full h-64 bg-slate-900/90 rounded-2xl border border-cyan-500/30 relative overflow-hidden shadow-inner">
+                <div class="relative w-full max-w-xs flex flex-col items-center">
+                    <canvas id="iceTowerCanvas" width="280" height="260" class="bg-slate-900/90 rounded-2xl border border-cyan-500/30 shadow-inner cursor-pointer"></canvas>
+                    <div class="flex justify-between w-full mt-2 px-4 gap-2">
+                        <button id="btnTowerLeft" class="flex-1 py-2.5 bg-slate-800 hover:bg-cyan-600 rounded-xl text-white active:scale-95 transition border border-slate-700 shadow text-xs font-bold flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-arrow-left"></i> Sol
+                        </button>
+                        <button id="btnTowerJump" class="flex-1 py-2.5 bg-cyan-600 hover:bg-cyan-500 rounded-xl text-white active:scale-95 transition border border-cyan-400 shadow text-xs font-bold">
+                            ZIPLA 🚀
+                        </button>
+                        <button id="btnTowerRight" class="flex-1 py-2.5 bg-slate-800 hover:bg-cyan-600 rounded-xl text-white active:scale-95 transition border border-slate-700 shadow text-xs font-bold flex items-center justify-center gap-1">
+                            Sağ <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
                 </div>
             `;
 
-            const area = document.getElementById('snowArea');
-            let score = 0;
-            let targetScore = 8;
-            let activeInterval;
+            const canvas = document.getElementById('iceTowerCanvas');
+            const ctx = canvas.getContext('2d');
 
-            function spawnFlake() {
-                if(score >= targetScore) return;
+            let player = {
+                x: 130,
+                y: 200,
+                width: 20,
+                height: 24,
+                vx: 0,
+                vy: 0,
+                isGrounded: false
+            };
 
-                const isBad = Math.random() < 0.25;
-                const flake = document.createElement('div');
-                flake.className = 'absolute text-2xl select-none cursor-pointer transition-transform active:scale-75';
-                flake.innerText = isBad ? '🔻' : '❄️';
-                flake.style.left = `${Math.random() * (area.clientWidth - 40)}px`;
-                flake.style.top = '-30px';
+            let gravity = 0.45;
+            let currentFloor = 0;
+            let targetFloor = 15;
+            let gameActive = true;
+            let cameraY = 0;
+            let animationFrameId;
 
-                area.appendChild(flake);
+            let floors = [
+                { id: 0, x: 20, y: 240, width: 240 }
+            ];
 
-                let top = -30;
-                let speed = 2 + Math.random() * 2.5;
-
-                const fallTimer = setInterval(() => {
-                    top += speed;
-                    flake.style.top = `${top}px`;
-
-                    if(top > area.clientHeight) {
-                        clearInterval(fallTimer);
-                        if(area.contains(flake)) area.removeChild(flake);
-                    }
-                }, 20);
-
-                flake.onclick = () => {
-                    clearInterval(fallTimer);
-                    if(area.contains(flake)) area.removeChild(flake);
-
-                    if(isBad) {
-                        score = Math.max(0, score - 1);
-                        document.getElementById('snowScore').innerText = score;
-                    } else {
-                        score++;
-                        document.getElementById('snowScore').innerText = score;
-                        if(score >= targetScore) {
-                            clearInterval(activeInterval);
-                            unlockNextLevel(3);
-                        }
-                    }
-                };
+            for (let i = 1; i <= 25; i++) {
+                let width = Math.max(60, 110 - i * 2);
+                let x = Math.random() * (canvas.width - width);
+                let y = 240 - i * 55;
+                floors.push({ id: i, x: x, y: y, width: width });
             }
 
-            activeInterval = setInterval(spawnFlake, 600);
+            let keys = { left: false, right: false };
+
+            function doJump() {
+                if (player.isGrounded && gameActive) {
+                    player.vy = -10.5;
+                    player.isGrounded = false;
+                }
+            }
+
+            canvas.onclick = doJump;
+            document.getElementById('btnTowerJump').onclick = doJump;
+
+            const btnLeft = document.getElementById('btnTowerLeft');
+            const btnRight = document.getElementById('btnTowerRight');
+
+            btnLeft.ontouchstart = (e) => { e.preventDefault(); keys.left = true; };
+            btnLeft.ontouchend = (e) => { e.preventDefault(); keys.left = false; };
+            btnLeft.onmousedown = () => { keys.left = true; };
+            btnLeft.onmouseup = () => { keys.left = false; };
+
+            btnRight.ontouchstart = (e) => { e.preventDefault(); keys.right = true; };
+            btnRight.ontouchend = (e) => { e.preventDefault(); keys.right = false; };
+            btnRight.onmousedown = () => { keys.right = true; };
+            btnRight.onmouseup = () => { keys.right = false; };
+
+            window.onkeydown = (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
+                if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
+                if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w') doJump();
+            };
+
+            window.onkeyup = (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
+                if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
+            };
+
+            function gameLoop() {
+                if (!gameActive) return;
+
+                if (keys.left) player.vx = -3.8;
+                else if (keys.right) player.vx = 3.8;
+                else player.vx *= 0.8;
+
+                player.vy += gravity;
+                player.x += player.vx;
+                player.y += player.vy;
+
+                if (player.x < -10) player.x = canvas.width - 10;
+                if (player.x > canvas.width) player.x = -10;
+
+                let targetCamY = 160 - player.y;
+                if (targetCamY > cameraY) {
+                    cameraY += (targetCamY - cameraY) * 0.1;
+                }
+
+                player.isGrounded = false;
+                if (player.vy > 0) {
+                    floors.forEach(f => {
+                        let renderY = f.y + cameraY;
+                        let renderPlayerY = player.y + cameraY;
+
+                        if (
+                            player.x + player.width > f.x &&
+                            player.x < f.x + f.width &&
+                            renderPlayerY + player.height >= renderY &&
+                            renderPlayerY + player.height <= renderY + 12
+                        ) {
+                            player.vy = 0;
+                            player.y = f.y - player.height;
+                            player.isGrounded = true;
+
+                            if (f.id > currentFloor) {
+                                currentFloor = f.id;
+                                document.getElementById('iceFloorScore').innerText = currentFloor;
+
+                                if (currentFloor >= targetFloor) {
+                                    gameActive = false;
+                                    cancelAnimationFrame(animationFrameId);
+                                    setTimeout(() => unlockNextLevel(3), 300);
+                                    return;
+                                }
+                            }
+                        }
+                    });
+                }
+
+                if (player.y + cameraY > canvas.height + 40) {
+                    gameActive = false;
+                    cancelAnimationFrame(animationFrameId);
+                    alert("Ayy düştün Özden'im! Odaklanıp tekrar tırman, yapabilirsin ❤️");
+                    startLevel3(container);
+                    return;
+                }
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = "rgba(6, 182, 212, 0.05)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                floors.forEach(f => {
+                    let renderY = f.y + cameraY;
+                    if (renderY > -30 && renderY < canvas.height + 30) {
+                        ctx.fillStyle = f.id === 0 ? '#38bdf8' : '#67e8f9';
+                        ctx.shadowColor = '#22d3ee';
+                        ctx.shadowBlur = 8;
+                        ctx.beginPath();
+                        ctx.roundRect(f.x, renderY, f.width, 10, 5);
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+
+                        ctx.fillStyle = '#0f172a';
+                        ctx.font = 'bold 8px sans-serif';
+                        ctx.fillText(`K${f.id}`, f.x + 4, renderY + 8);
+                    }
+                });
+
+                let renderPlayerY = player.y + cameraY;
+                ctx.font = "20px serif";
+                ctx.fillText("👸", player.x - 2, renderPlayerY + 18);
+
+                if (gameActive) {
+                    animationFrameId = requestAnimationFrame(gameLoop);
+                }
+            }
+
+            gameLoop();
         }
 
         // ==========================================
-        // LEVEL 4: Hareketli Elmas Avı (Kolye)
+        // LEVEL 4: Işık Deseni Hafızası / Simon Says (Kolye)
         // ==========================================
         function startLevel4(container) {
-            let score = 0;
-            let targetCount = 8;
             container.innerHTML = `
                 <div class="text-center mb-2">
-                    <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30">ZORLU REFLEKS</span>
-                    <h3 class="title-font text-base font-bold text-pink-200 mt-1">Bölüm 4: Işıltılı Kolye Avı 💎</h3>
-                    <p class="text-[11px] text-slate-300">Giderek küçülen ve ışınlanan kolyeye 8 kez tıkla!</p>
-                    <div class="mt-2 text-xs font-bold text-pink-400">Yakalanan: <span id="clickScore">0</span>/${targetCount}</div>
+                    <span class="text-[10px] bg-purple-500/20 text-purple-300 font-bold px-2.5 py-0.5 rounded-full border border-purple-500/30">HAFIZA & DIKKAT</span>
+                    <h3 class="title-font text-base font-bold text-pink-200 mt-1">Bölüm 4: Işıltılı Kolye Şifresi 💎</h3>
+                    <p class="text-[11px] text-slate-300" id="simonStatus">Yanıp sönen renk sırasını aklında tut ve takip et!</p>
+                    <div class="mt-1 text-xs font-bold text-pink-300">Aşama: <span id="simonScore">1</span>/5</div>
                 </div>
-                <div id="catchArea" class="w-full h-60 bg-slate-900/90 rounded-2xl border border-pink-500/30 relative overflow-hidden shadow-inner flex items-center justify-center">
-                    <button id="targetJewel" class="absolute text-3xl transition-all duration-150 p-2 active:scale-90" style="top: 40%; left: 40%;">💎</button>
+                <div class="w-64 h-64 grid grid-cols-2 gap-3 p-2 bg-slate-900/90 rounded-3xl border border-pink-500/30 shadow-inner relative items-center justify-center">
+                    <button id="simon0" data-id="0" class="simon-btn bg-rose-500 hover:bg-rose-400 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg border border-rose-300/40">💎</button>
+                    <button id="simon1" data-id="1" class="simon-btn bg-amber-500 hover:bg-amber-400 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg border border-amber-300/40">✨</button>
+                    <button id="simon2" data-id="2" class="simon-btn bg-emerald-500 hover:bg-emerald-400 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg border border-emerald-300/40">💖</button>
+                    <button id="simon3" data-id="3" class="simon-btn bg-purple-500 hover:bg-purple-400 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg border border-purple-300/40">👑</button>
                 </div>
+                <button id="startSimonBtn" class="mt-3 px-5 py-2 bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl text-xs font-bold text-white shadow">
+                    Işık Desenini Başlat ▶️
+                </button>
             `;
 
-            const btn = document.getElementById('targetJewel');
-            const scoreEl = document.getElementById('clickScore');
-            const area = document.getElementById('catchArea');
+            const sequence = [];
+            let userStep = 0;
+            let targetLength = 5;
+            let isPlayingSequence = false;
+            let gameStarted = false;
 
-            function moveTarget() {
-                const maxX = area.clientWidth - 45;
-                const maxY = area.clientHeight - 45;
-                const randomX = Math.floor(Math.random() * maxX);
-                const randomY = Math.floor(Math.random() * maxY);
-                
-                const scale = Math.max(0.65, 1 - (score * 0.05));
-                btn.style.transform = `scale(${scale})`;
-                btn.style.left = `${randomX}px`;
-                btn.style.top = `${randomY}px`;
+            const buttons = [
+                document.getElementById('simon0'),
+                document.getElementById('simon1'),
+                document.getElementById('simon2'),
+                document.getElementById('simon3')
+            ];
+
+            function flashButton(idx) {
+                return new Promise((resolve) => {
+                    const btn = buttons[idx];
+                    btn.classList.add('active');
+                    setTimeout(() => {
+                        btn.classList.remove('active');
+                        setTimeout(resolve, 200);
+                    }, 400);
+                });
             }
 
-            btn.onclick = (e) => {
-                e.stopPropagation();
-                score++;
-                scoreEl.innerText = score;
-                if(score >= targetCount) {
-                    unlockNextLevel(4);
-                } else {
-                    moveTarget();
+            async function playSequence() {
+                isPlayingSequence = true;
+                document.getElementById('simonStatus').innerText = "Işıkları dikkatlice izle Özden'im...";
+                userStep = 0;
+
+                for (let i = 0; i < sequence.length; i++) {
+                    await flashButton(sequence[i]);
                 }
+
+                isPlayingSequence = false;
+                document.getElementById('simonStatus').innerText = "Şimdi sıra sende! Aynı sırayla dokun.";
+            }
+
+            function nextRound() {
+                sequence.push(Math.floor(Math.random() * 4));
+                document.getElementById('simonScore').innerText = sequence.length;
+                setTimeout(playSequence, 800);
+            }
+
+            document.getElementById('startSimonBtn').onclick = () => {
+                if (gameStarted) return;
+                gameStarted = true;
+                document.getElementById('startSimonBtn').classList.add('hidden');
+                nextRound();
             };
+
+            buttons.forEach((btn, idx) => {
+                btn.onclick = () => {
+                    if (!gameStarted || isPlayingSequence) return;
+
+                    flashButton(idx);
+
+                    if (idx === sequence[userStep]) {
+                        userStep++;
+                        if (userStep === sequence.length) {
+                            if (sequence.length >= targetLength) {
+                                setTimeout(() => unlockNextLevel(4), 500);
+                            } else {
+                                nextRound();
+                            }
+                        }
+                    } else {
+                        alert("Hata yaptın güzelim! Desen sıfırlandı, yeniden dene ❤️");
+                        startLevel4(container);
+                    }
+                };
+            });
         }
 
         // ==========================================
@@ -750,7 +1032,7 @@
 
             const pin = document.getElementById('sliderPin');
             let pos = 0;
-            let dir = 3.2; // Fast speed
+            let dir = 3.2;
             let interval = setInterval(() => {
                 pos += dir;
                 if(pos >= 95 || pos <= 0) dir *= -1;
@@ -769,7 +1051,7 @@
         }
 
         // ==========================================
-        // LEVEL 8: Sanat Ritim Yolu (Fırça Seti) - YENİ FİNAL!
+        // LEVEL 8: Sanat Ritim Yolu (Fırça Seti)
         // ==========================================
         function startLevel8(container) {
             container.innerHTML = `
@@ -816,7 +1098,6 @@
                         clearInterval(anim);
                         if(col.contains(tile)) {
                             col.removeChild(tile);
-                            // Missed tile
                             gameActive = false;
                             alert("Sanat notasını kaçırdın Özden'im! Tekrar dene ❤️");
                             startLevel8(container);
