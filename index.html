@@ -2,160 +2,244 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Enver'in Özden'e Hediye Avı ❤️</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Canvas Confetti for celebrations -->
+    <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap');
+        
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #31102f 50%, #1e1b4b 100%);
+            background: radial-gradient(circle at top, #2e0854 0%, #0f172a 60%, #050515 100%);
             min-height: 100vh;
             color: #f8fafc;
-            margin: 0;
-            padding: 0;
+            user-select: none;
+            touch-action: manipulation;
         }
+
+        .title-font {
+            font-family: 'Fredoka', sans-serif;
+        }
+
         .glass-panel {
-            background: rgba(30, 41, 59, 0.75);
-            backdrop-filter: blur(14px);
-            border: 1px solid rgba(244, 114, 182, 0.2);
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(244, 114, 182, 0.25);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
+
         .card-flip {
             perspective: 1000px;
         }
+
         .card-inner {
-            transition: transform 0.6s;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             transform-style: preserve-3d;
         }
+
         .card-inner.flipped {
             transform: rotateY(180deg);
         }
+
         .card-front, .card-back {
             backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
+
         .card-back {
             transform: rotateY(180deg);
         }
+
         canvas {
             touch-action: none;
         }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(244, 114, 182, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(244, 114, 182, 0.8); }
+        }
+
+        .glow-active {
+            animation: pulseGlow 2s infinite;
+        }
     </style>
 </head>
-<body class="flex flex-col min-h-screen">
+<body class="flex flex-col min-h-screen justify-between pb-6">
 
     <!-- Header Navigation -->
     <header class="w-full glass-panel sticky top-0 z-40 px-4 py-3 border-b border-rose-500/30">
-        <div class="max-w-5xl mx-auto flex justify-between items-center">
+        <div class="max-w-md mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="p-2 bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl text-white shadow-lg shadow-pink-500/30">
-                    <i class="fa-solid fa-heart text-xl animate-pulse"></i>
+                <div class="w-10 h-10 bg-gradient-to-tr from-pink-500 to-rose-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-pink-500/30">
+                    <i class="fa-solid fa-heart text-xl animate-bounce"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-rose-300 to-indigo-200">
-                        Enver & Özden Hediye Serüveni ✨
+                    <h1 class="title-font text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-rose-300 to-amber-200">
+                        Özden'in Hediye Avı ✨
                     </h1>
-                    <p class="text-xs text-rose-300/80">7 Eğlenceli Bölüm, 7 Gizemli Hediye!</p>
+                    <p class="text-[11px] text-rose-300/80 font-medium">Enver'den Birtanesine 7 Sürpriz</p>
                 </div>
             </div>
-            <button onclick="resetProgress()" class="text-xs text-slate-400 hover:text-rose-400 transition flex items-center gap-1">
-                <i class="fa-solid fa-rotate-right"></i> Sıfırla
+            <button onclick="resetProgress()" class="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-rose-900/50 text-slate-300 hover:text-rose-300 border border-slate-700 text-xs font-semibold transition flex items-center gap-1.5">
+                <i class="fa-solid fa-rotate-right text-[10px]"></i> Sıfırla
             </button>
         </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 max-w-5xl w-full mx-auto p-4 flex flex-col gap-5">
+    <!-- Main Game Container -->
+    <main class="flex-1 max-w-md w-full mx-auto px-4 py-4 flex flex-col gap-4 justify-start">
 
         <!-- Banner Greeting -->
         <div class="glass-panel p-4 rounded-2xl border border-pink-500/30 text-center relative overflow-hidden">
-            <div class="absolute -right-4 -bottom-4 text-pink-500/10 text-7xl select-none pointer-events-none">❤️</div>
-            <h2 class="text-lg font-bold text-pink-300">Hoş geldin Özden! Enver'in Hediye Avına Hoş Geldin 💕</h2>
-            <p class="text-xs text-slate-300 mt-1">
-                Senin için hazırladığım mini oyunları tamamladıkça sürpriz hediyelerini birer birer açacaksın! Bakalım tüm bölümleri geçebilecek misin?
+            <div class="absolute -right-3 -bottom-3 text-pink-500/10 text-6xl select-none pointer-events-none">💖</div>
+            <h2 class="title-font text-base font-bold text-pink-200">Hoş Geldin Özden'im! 💕</h2>
+            <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                Her bölümde zorluk biraz daha artacak! Bölümü tamamla, Enver'in senin için hazırladığı hediyenin kilidini aç! 🎁
             </p>
         </div>
 
-        <!-- Levels Map / Progress Bar -->
-        <section class="glass-panel p-4 rounded-2xl border border-slate-700">
-            <h2 class="text-xs font-semibold text-rose-300 mb-3 uppercase tracking-wider flex items-center gap-2">
-                <i class="fa-solid fa-map-location-dot"></i> Gizemli Bölümler
-            </h2>
-            <div class="grid grid-cols-7 gap-2" id="levelSelector">
-                <!-- Level buttons inserted dynamically -->
+        <!-- Level Map / Selector -->
+        <section class="glass-panel p-3 rounded-2xl border border-slate-700/80">
+            <div class="flex justify-between items-center mb-2 px-1">
+                <span class="text-xs font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="fa-solid fa-map-pin"></i> Bölümler
+                </span>
+                <span class="text-[11px] text-pink-400 font-semibold" id="levelProgressText">1 / 7 Tamamlandı</span>
+            </div>
+            <div class="grid grid-cols-7 gap-1.5" id="levelSelector">
+                <!-- Dynamic level buttons -->
             </div>
         </section>
 
-        <!-- Active Game Container -->
-        <section class="glass-panel p-5 rounded-3xl flex-1 flex flex-col justify-center items-center relative overflow-hidden min-h-[420px] border border-rose-500/20" id="gameArea">
-            <!-- Dynamic game views will render here -->
+        <!-- Active Game Box -->
+        <section class="glass-panel p-4 rounded-3xl flex-1 flex flex-col justify-center items-center relative overflow-hidden min-h-[380px] border border-rose-500/30" id="gameArea">
+            <!-- Game views will render dynamically here -->
         </section>
 
     </main>
 
-    <!-- Modal for Reward Unlocked -->
+    <!-- Reward Modal -->
     <div id="rewardModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
-        <div class="glass-panel max-w-md w-full p-6 rounded-3xl text-center border-2 border-pink-500/40 shadow-2xl relative">
-            <div class="w-20 h-20 bg-gradient-to-tr from-pink-500 to-rose-400 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-4xl shadow-xl shadow-pink-500/30">
+        <div class="glass-panel max-w-sm w-full p-6 rounded-3xl text-center border-2 border-pink-500/50 shadow-2xl relative animate-scale-up">
+            <div class="w-20 h-20 bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 rounded-3xl flex items-center justify-center mx-auto mb-3 text-white text-4xl shadow-xl shadow-pink-500/40 glow-active">
                 <i id="rewardIcon" class="fa-solid fa-gift"></i>
             </div>
-            <span class="bg-pink-500/20 text-pink-300 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-pink-500/30">
+            <span class="bg-pink-500/20 text-pink-300 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-pink-500/30">
                 Tebrikler Özdenim! 🎉
             </span>
-            <h3 class="text-2xl font-bold text-white mt-3" id="rewardTitle">Sürpriz Hediyen Açıldı!</h3>
-            <p class="text-slate-300 text-sm mt-2 leading-relaxed" id="rewardDesc">
-                Harika bir iş çıkardın birtanem!
+            <h3 class="title-font text-xl font-bold text-white mt-3" id="rewardTitle">Sürpriz Hediyen Açıldı!</h3>
+            <p class="text-slate-300 text-xs mt-2 leading-relaxed" id="rewardDesc">
+                Harika bir performans gösterdin hayatım!
             </p>
-            <div class="bg-slate-800/90 p-3.5 rounded-2xl border border-pink-500/30 mt-4 text-xs text-pink-200 shadow-inner">
-                🎁 <span class="font-bold">Enver'in Notu:</span> Bu hediye seni bekliyor güzelim! Şimdi yanıma gelip sarılarak hediyeni isteyebilirsin ❤️
+            <div class="bg-slate-900/90 p-3.5 rounded-2xl border border-pink-500/30 mt-4 text-xs text-pink-200 shadow-inner text-left flex gap-2.5 items-start">
+                <i class="fa-solid fa-heart text-pink-500 text-base mt-0.5"></i>
+                <div>
+                    <span class="font-bold text-pink-300 block mb-0.5">Enver'den Not:</span>
+                    <span id="rewardNote" class="text-slate-300 italic">"Bu hediye senin için hazır birtanem!"</span>
+                </div>
             </div>
-            <button onclick="closeRewardModal()" class="w-full mt-5 py-3.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-semibold rounded-xl shadow-lg shadow-pink-500/20 transition active:scale-95">
-                Sonraki Sürprize Geç <i class="fa-solid fa-arrow-right ml-1"></i>
+            <button onclick="closeRewardModal()" class="w-full mt-5 py-3.5 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:opacity-90 text-white font-bold rounded-xl shadow-lg shadow-pink-500/30 transition active:scale-95 text-sm">
+                Sonraki Seviyeye Geç <i class="fa-solid fa-arrow-right ml-1"></i>
             </button>
         </div>
     </div>
 
     <script>
-        // Game Configurations & Custom Messages for Özden & Enver
+        // Game Configurations & Custom Gifts
         const LEVELS = [
-            { id: 1, title: "1. Gizemli Sürpriz", reward: "Sıcak Tutacak Tatlı Çoraplar 🧦", icon: "fa-socks", desc: "Soğuk günlerde Özden'imin narin ayaklarını sıcacık tutacak sevimli çoraplar kazandın!" },
-            { id: 2, title: "2. Gizemli Sürpriz", reward: "Rahatlatıcı Stres Küpü 🧊", icon: "fa-cube", desc: "Seni hiç yormasınlar, stresini alıp götürecek tatlı bir yardımcın olsun diye!" },
-            { id: 3, title: "3. Gizemli Sürpriz", reward: "Işıl Işıl Kolye 💎", icon: "fa-gem", desc: "Güzelliğine güzellik katacak, boynuna çok yakışacak zarafette harika bir kolye!" },
-            { id: 4, title: "4. Gizemli Sürpriz", reward: "Özel Noodle Kasesi 🍜", icon: "fa-bowl-food", desc: "En lezzetli noodle'ları afiyetle ye diye Özden'e özel tatlı kase!" },
-            { id: 5, title: "5. Gizemli Sürpriz", reward: "Şık ve Sıcak Ceket 🧥", icon: "fa-vest", desc: "Sana çok yakışacak, seni soğuktan koruyup sarıp sarmalayacak harika bir ceket!" },
-            { id: 6, title: "6. Gizemli Sürpriz", reward: "Harika Maskara 💄", icon: "fa-wand-magic-sparkles", desc: "Zaten dünyalara bedel olan güzel gözlerinin ışıltısına ışıltı katacak maskara!" },
-            { id: 7, title: "7. Gizemli Sürpriz", reward: "Makyaj & Sanat Fırça Seti 🖌️", icon: "fa-paint-brush", desc: "Tüm güzelliklerini ortaya çıkaracağın eksiksiz ve muhteşem fırça seti!" }
+            { 
+                id: 1, 
+                title: "1. Bölüm: Yılan Avı", 
+                reward: "Sıcak Çoraplar 🧦", 
+                icon: "fa-socks", 
+                desc: "Soğuk günlerde Özden'imin narin ayaklarını sıcacık tutacak sevimli çoraplar kazandın!",
+                note: "Ayakların hiç üşümesin diye ilk hediyen hazır güzelliğim!"
+            },
+            { 
+                id: 2, 
+                title: "2. Bölüm: Hafıza Eşleme", 
+                reward: "Stres Küpü 🧊", 
+                icon: "fa-cube", 
+                desc: "Seni hiç yormasınlar, stresini alıp götürecek tatlı bir yardımcın olsun diye!",
+                note: "Ne zaman canın sıkılsa bunu sık ve seni çok sevdiğimi hatırla birtanem."
+            },
+            { 
+                id: 3, 
+                title: "3. Bölüm: Işıltılı Refleks", 
+                reward: "Işıl Işıl Kolye 💎", 
+                icon: "fa-gem", 
+                desc: "Güzelliğine güzellik katacak, boynuna çok yakışacak zarafette harika bir kolye!",
+                note: "Bu kolyeyi boynuna kendi ellerimle takmak için sabırsızlanıyorum."
+            },
+            { 
+                id: 4, 
+                title: "4. Bölüm: Noodle Yakalama", 
+                reward: "Özel Noodle Kasesi 🍜", 
+                icon: "fa-bowl-food", 
+                desc: "En lezzetli noodle'ları afiyetle ye diye Özden'e özel harika kase!",
+                note: "Birlikte yiyeceğimiz en lezzetli noodle'lar için!"
+            },
+            { 
+                id: 5, 
+                title: "5. Bölüm: Engelli Koşu", 
+                reward: "Şık ve Sıcak Ceket 🧥", 
+                icon: "fa-vest", 
+                desc: "Sana çok yakışacak, seni soğuktan koruyup sarıp sarmalayacak şık ceket!",
+                note: "Ben yanında yokken seni sıcacık tutsun güzelim."
+            },
+            { 
+                id: 6, 
+                title: "6. Bölüm: Tam Zamanlama", 
+                reward: "Harika Maskara 💄", 
+                icon: "fa-wand-magic-sparkles", 
+                desc: "Zaten dünyalara bedel olan güzel gözlerinin ışıltısına ışıltı katacak maskara!",
+                note: "O güzel bakışlarına zaten hayranım, buna bayılacaksın!"
+            },
+            { 
+                id: 7, 
+                title: "7. Bölüm: Sürpriz Tuval", 
+                reward: "Makyaj & Fırça Seti 🖌️", 
+                icon: "fa-paint-brush", 
+                desc: "Tüm güzelliklerini ortaya çıkaracağın eksiksiz ve muhteşem fırça seti!",
+                note: "Sen benim hayatıma renk katan en güzel sanatsın Özden'im ❤️"
+            }
         ];
 
-        let currentLevel = parseInt(localStorage.getItem('unlockedLevel_ozden')) || 1;
+        let currentLevel = parseInt(localStorage.getItem('unlockedLevel_ozden_v2')) || 1;
         let activeLevelView = currentLevel;
 
         function renderLevelSelector() {
             const container = document.getElementById('levelSelector');
             container.innerHTML = '';
+            
+            document.getElementById('levelProgressText').innerText = `${Math.min(currentLevel - 1, 7)} / 7 Tamamlandı`;
 
             LEVELS.forEach(lvl => {
                 const isUnlocked = lvl.id <= currentLevel;
                 const isActive = lvl.id === activeLevelView;
+                const isPassed = lvl.id < currentLevel;
                 
                 const btn = document.createElement('button');
                 btn.className = `p-2 rounded-xl flex flex-col items-center justify-center transition border ${
                     isActive ? 'bg-gradient-to-b from-pink-500 to-rose-600 text-white border-pink-300 ring-2 ring-pink-400/50 shadow-lg' : 
+                    isPassed ? 'bg-emerald-950/60 text-emerald-300 border-emerald-600/50 hover:bg-emerald-900/50' :
                     isUnlocked ? 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700' : 
-                    'bg-slate-900/50 text-slate-600 border-slate-800/80 cursor-not-allowed'
+                    'bg-slate-900/40 text-slate-600 border-slate-800/80 cursor-not-allowed opacity-60'
                 }`;
                 btn.disabled = !isUnlocked;
                 btn.onclick = () => loadLevel(lvl.id);
 
                 btn.innerHTML = `
-                    <div class="text-base mb-1">
-                        <i class="fa-solid ${isUnlocked ? 'fa-gift' : 'fa-lock'}"></i>
+                    <div class="text-xs mb-0.5">
+                        <i class="fa-solid ${isPassed ? 'fa-circle-check' : isUnlocked ? 'fa-gift' : 'fa-lock'}"></i>
                     </div>
-                    <span class="text-[10px] font-bold">Bölüm ${lvl.id}</span>
+                    <span class="text-[9px] font-bold">B${lvl.id}</span>
                 `;
                 container.appendChild(btn);
             });
@@ -180,21 +264,22 @@
 
         function unlockNextLevel(completedLevel) {
             confetti({
-                particleCount: 120,
-                spread: 80,
+                particleCount: 150,
+                spread: 90,
                 origin: { y: 0.6 },
-                colors: ['#f472b6', '#fb7185', '#e879f9', '#ffffff']
+                colors: ['#f472b6', '#fb7185', '#e879f9', '#f59e0b', '#ffffff']
             });
 
             const lvlData = LEVELS.find(l => l.id === completedLevel);
             document.getElementById('rewardIcon').className = `fa-solid ${lvlData.icon}`;
             document.getElementById('rewardTitle').innerText = `Açılan Hediye: ${lvlData.reward}`;
             document.getElementById('rewardDesc').innerText = lvlData.desc;
+            document.getElementById('rewardNote').innerText = `"${lvlData.note}"`;
             document.getElementById('rewardModal').classList.remove('hidden');
 
-            if (completedLevel >= currentLevel && currentLevel < 7) {
+            if (completedLevel >= currentLevel && currentLevel <= 7) {
                 currentLevel = completedLevel + 1;
-                localStorage.setItem('unlockedLevel_ozden', currentLevel);
+                localStorage.setItem('unlockedLevel_ozden_v2', currentLevel);
             }
         }
 
@@ -209,39 +294,42 @@
 
         function resetProgress() {
             if(confirm("Tüm bölümleri sıfırlayıp baştan oynamak ister misin Özden?")) {
-                localStorage.removeItem('unlockedLevel_ozden');
+                localStorage.removeItem('unlockedLevel_ozden_v2');
                 currentLevel = 1;
                 loadLevel(1);
             }
         }
 
-        // LEVEL 1: Snake (Gizemli Toplama Oyunu)
+        // ==========================================
+        // LEVEL 1: Minik Yılan (Kolye / Çorap Avı)
+        // ==========================================
         function startLevel1(container) {
             container.innerHTML = `
                 <div class="text-center mb-2">
-                    <h3 class="text-lg font-bold text-pink-300">Bölüm 1: Minik İpucu Avı 🎁</h3>
-                    <p class="text-xs text-slate-300">Yön tuşları veya butonlarla ekrandaki 5 sembolü topla ve ilk sürprizi aç!</p>
+                    <span class="text-[10px] bg-pink-500/20 text-pink-300 font-bold px-2.5 py-0.5 rounded-full border border-pink-500/30">KOLAY</span>
+                    <h3 class="title-font text-base font-bold text-pink-200 mt-1">Bölüm 1: Çorap Toplama 🧦</h3>
+                    <p class="text-[11px] text-slate-300">Yön butonları ile yılanı yönet ve 5 çorap topla!</p>
                 </div>
                 <div class="relative">
-                    <canvas id="snakeCanvas" width="280" height="280" class="bg-slate-900 rounded-2xl border border-pink-500/30 shadow-inner"></canvas>
+                    <canvas id="snakeCanvas" width="260" height="240" class="bg-slate-900/90 rounded-2xl border border-pink-500/30 shadow-inner"></canvas>
                 </div>
-                <div class="grid grid-cols-3 gap-2 mt-4 w-48">
+                <div class="grid grid-cols-3 gap-1.5 mt-3 w-44">
                     <div></div>
-                    <button id="btnUp" class="p-3 bg-slate-800 hover:bg-pink-600 rounded-xl text-white active:scale-95 border border-slate-700"><i class="fa-solid fa-arrow-up"></i></button>
+                    <button id="btnUp" class="p-2.5 bg-slate-800 hover:bg-pink-600 rounded-xl text-white active:scale-90 transition border border-slate-700 shadow"><i class="fa-solid fa-arrow-up"></i></button>
                     <div></div>
-                    <button id="btnLeft" class="p-3 bg-slate-800 hover:bg-pink-600 rounded-xl text-white active:scale-95 border border-slate-700"><i class="fa-solid fa-arrow-left"></i></button>
-                    <button id="btnDown" class="p-3 bg-slate-800 hover:bg-pink-600 rounded-xl text-white active:scale-95 border border-slate-700"><i class="fa-solid fa-arrow-down"></i></button>
-                    <button id="btnRight" class="p-3 bg-slate-800 hover:bg-pink-600 rounded-xl text-white active:scale-95 border border-slate-700"><i class="fa-solid fa-arrow-right"></i></button>
+                    <button id="btnLeft" class="p-2.5 bg-slate-800 hover:bg-pink-600 rounded-xl text-white active:scale-90 transition border border-slate-700 shadow"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button id="btnDown" class="p-2.5 bg-slate-800 hover:bg-pink-600 rounded-xl text-white active:scale-90 transition border border-slate-700 shadow"><i class="fa-solid fa-arrow-down"></i></button>
+                    <button id="btnRight" class="p-2.5 bg-slate-800 hover:bg-pink-600 rounded-xl text-white active:scale-90 transition border border-slate-700 shadow"><i class="fa-solid fa-arrow-right"></i></button>
                 </div>
             `;
 
             const canvas = document.getElementById('snakeCanvas');
             const ctx = canvas.getContext('2d');
-            const grid = 14;
+            const grid = 20;
             let score = 0;
-            let snake = [{x: 7*grid, y: 7*grid}];
+            let snake = [{x: 5*grid, y: 5*grid}];
             let dx = grid, dy = 0;
-            let food = {x: 3*grid, y: 3*grid};
+            let food = {x: 8*grid, y: 8*grid};
             let gameInterval;
 
             function placeFood() {
@@ -274,18 +362,29 @@
                 ctx.fillStyle = '#0f172a';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                ctx.fillStyle = '#ec4899';
-                snake.forEach((part) => {
+                // Grid lines
+                ctx.strokeStyle = '#1e293b';
+                for(let i=0; i<canvas.width; i+=grid) {
+                    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+                }
+                for(let i=0; i<canvas.height; i+=grid) {
+                    ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+                }
+
+                // Snake
+                snake.forEach((part, index) => {
+                    ctx.fillStyle = index === 0 ? '#f472b6' : '#ec4899';
                     ctx.beginPath();
-                    ctx.roundRect(part.x, part.y, grid-1, grid-1, 4);
+                    ctx.roundRect(part.x+1, part.y+1, grid-2, grid-2, 6);
                     ctx.fill();
                 });
 
-                ctx.font = "12px serif";
-                ctx.fillText("🎁", food.x, food.y + 12);
+                // Sock Food
+                ctx.font = "14px serif";
+                ctx.fillText("🧦", food.x + 2, food.y + 15);
             }
 
-            gameInterval = setInterval(update, 150);
+            gameInterval = setInterval(update, 160);
 
             const handleDir = (dir) => {
                 if(dir==='UP' && dy===0){ dx=0; dy=-grid; }
@@ -298,26 +397,22 @@
             document.getElementById('btnDown').onclick = () => handleDir('DOWN');
             document.getElementById('btnLeft').onclick = () => handleDir('LEFT');
             document.getElementById('btnRight').onclick = () => handleDir('RIGHT');
-
-            window.onkeydown = (e) => {
-                if(e.key==='ArrowUp') handleDir('UP');
-                if(e.key==='ArrowDown') handleDir('DOWN');
-                if(e.key==='ArrowLeft') handleDir('LEFT');
-                if(e.key==='ArrowRight') handleDir('RIGHT');
-            };
         }
 
-        // LEVEL 2: Memory Game (Hafıza Kartları)
+        // ==========================================
+        // LEVEL 2: Hafıza Kartları (Stres Küpü)
+        // ==========================================
         function startLevel2(container) {
             container.innerHTML = `
-                <div class="text-center mb-4">
-                    <h3 class="text-lg font-bold text-pink-300">Bölüm 2: Sevgi Kartları 💖</h3>
-                    <p class="text-xs text-slate-300">Tüm kartları eşleştirip 2. sürpriz hediyenin kilidini aç!</p>
+                <div class="text-center mb-3">
+                    <span class="text-[10px] bg-blue-500/20 text-blue-300 font-bold px-2.5 py-0.5 rounded-full border border-blue-500/30">ORTA</span>
+                    <h3 class="title-font text-base font-bold text-pink-200 mt-1">Bölüm 2: Hafıza Eşleştirme 🧊</h3>
+                    <p class="text-[11px] text-slate-300">Tüm kart eşlerini bularak stresini azalt!</p>
                 </div>
-                <div class="grid grid-cols-4 gap-2.5 max-w-xs w-full" id="memoryGrid"></div>
+                <div class="grid grid-cols-4 gap-2 w-full max-w-xs" id="memoryGrid"></div>
             `;
 
-            const icons = ['❤️', '⭐', '✨', '🎁', '🎈', '🌸'];
+            const icons = ['🧊', '💖', '🎁', '⭐', '🌸', '🍩'];
             const cards = [...icons, ...icons].sort(() => Math.random() - 0.5);
             let flipped = [];
             let matchedCount = 0;
@@ -327,9 +422,9 @@
                 const card = document.createElement('div');
                 card.className = 'card-flip h-16 cursor-pointer';
                 card.innerHTML = `
-                    <div class="card-inner w-full h-full relative rounded-xl shadow-lg" data-symbol="${symbol}" data-index="${index}">
-                        <div class="card-front absolute inset-0 bg-slate-800 border border-pink-500/30 flex items-center justify-center rounded-xl text-xl text-pink-400">❓</div>
-                        <div class="card-back absolute inset-0 bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center rounded-xl text-2xl">${symbol}</div>
+                    <div class="card-inner w-full h-full relative rounded-xl shadow-md" data-symbol="${symbol}">
+                        <div class="card-front absolute inset-0 bg-slate-800/90 border border-pink-500/30 flex items-center justify-center rounded-xl text-lg text-pink-400 font-bold">?</div>
+                        <div class="card-back absolute inset-0 bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center rounded-xl text-2xl shadow-inner">${symbol}</div>
                     </div>
                 `;
                 
@@ -344,14 +439,14 @@
                                 matchedCount += 2;
                                 flipped = [];
                                 if (matchedCount === cards.length) {
-                                    setTimeout(() => unlockNextLevel(2), 500);
+                                    setTimeout(() => unlockNextLevel(2), 400);
                                 }
                             } else {
                                 setTimeout(() => {
                                     flipped[0].classList.remove('flipped');
                                     flipped[1].classList.remove('flipped');
                                     flipped = [];
-                                }, 800);
+                                }, 700);
                             }
                         }
                     }
@@ -360,17 +455,21 @@
             });
         }
 
-        // LEVEL 3: Catch Target (Hedef Tıklama)
+        // ==========================================
+        // LEVEL 3: Hızlı Yıldız Yakalama (Kolye)
+        // ==========================================
         function startLevel3(container) {
             let score = 0;
+            let targetCount = 8;
             container.innerHTML = `
-                <div class="text-center mb-4">
-                    <h3 class="text-lg font-bold text-pink-300">Bölüm 3: Refleks Testi ✨</h3>
-                    <p class="text-xs text-slate-300">Ekranda beliren parlak yıldıza 7 kez dokun!</p>
-                    <div class="mt-2 text-sm font-bold text-pink-400">Skor: <span id="clickScore">0</span>/7</div>
+                <div class="text-center mb-2">
+                    <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30">HIZLI REFLEKS</span>
+                    <h3 class="title-font text-base font-bold text-pink-200 mt-1">Bölüm 3: Işıltılı Kolye Avı 💎</h3>
+                    <p class="text-[11px] text-slate-300">Giderek hızlanan elmasa 8 kez dokun!</p>
+                    <div class="mt-2 text-xs font-bold text-pink-400">Yakalanan: <span id="clickScore">0</span>/${targetCount}</div>
                 </div>
-                <div id="catchArea" class="w-full h-64 bg-slate-900 rounded-2xl border border-pink-500/30 relative overflow-hidden">
-                    <button id="targetJewel" class="absolute text-4xl transition-all duration-300 p-2 active:scale-95" style="top: 40%; left: 42%;">⭐</button>
+                <div id="catchArea" class="w-full h-64 bg-slate-900/90 rounded-2xl border border-pink-500/30 relative overflow-hidden shadow-inner flex items-center justify-center">
+                    <button id="targetJewel" class="absolute text-3xl transition-all duration-200 p-2 active:scale-90" style="top: 40%; left: 40%;">💎</button>
                 </div>
             `;
 
@@ -383,14 +482,19 @@
                 const maxY = area.clientHeight - 50;
                 const randomX = Math.floor(Math.random() * maxX);
                 const randomY = Math.floor(Math.random() * maxY);
+                
+                // Shrink target slightly as score increases to make it harder
+                const scale = Math.max(0.7, 1 - (score * 0.04));
+                btn.style.transform = `scale(${scale})`;
                 btn.style.left = `${randomX}px`;
                 btn.style.top = `${randomY}px`;
             }
 
-            btn.onclick = () => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
                 score++;
                 scoreEl.innerText = score;
-                if(score >= 7) {
+                if(score >= targetCount) {
                     unlockNextLevel(3);
                 } else {
                     moveTarget();
@@ -398,14 +502,17 @@
             };
         }
 
-        // LEVEL 4: Catch Fallers (Düşen Objeleri Yakalama)
+        // ==========================================
+        // LEVEL 4: Noodle Yakalama (Kase ile Malzeme)
+        // ==========================================
         function startLevel4(container) {
             container.innerHTML = `
-                <div class="text-center mb-2">
-                    <h3 class="text-lg font-bold text-pink-300">Bölüm 4: Lezzet Yakalama 😋</h3>
-                    <p class="text-xs text-slate-300">Sepeti sağa-sola kaydırarak 5 lezzetli sembolü yakala!</p>
+                <div class="text-center mb-1">
+                    <span class="text-[10px] bg-orange-500/20 text-orange-300 font-bold px-2.5 py-0.5 rounded-full border border-orange-500/30">DİKKAT</span>
+                    <h3 class="title-font text-base font-bold text-pink-200 mt-0.5">Bölüm 4: Noodle Kasesi 🍜</h3>
+                    <p class="text-[10px] text-slate-300">Kaseyi kaydır! Bombalara (💣) dokunma, 7 lezzeti yakala!</p>
                 </div>
-                <canvas id="noodleCanvas" width="300" height="280" class="bg-slate-900 rounded-2xl border border-pink-500/30 shadow-inner"></canvas>
+                <canvas id="noodleCanvas" width="280" height="260" class="bg-slate-900/90 rounded-2xl border border-pink-500/30 shadow-inner"></canvas>
             `;
 
             const canvas = document.getElementById('noodleCanvas');
@@ -413,50 +520,66 @@
             let basketX = 120;
             let score = 0;
             let items = [];
-            let gameLoop;
+            let gameActive = true;
 
             function spawnItem() {
-                const types = ['🍎', '🍓', '🍒', '🍭'];
+                if(!gameActive) return;
+                const isBomb = Math.random() < 0.25; // 25% chance of bomb
+                const types = ['🍜', '🥢', '🥚', '🦐', '🍄'];
                 items.push({
                     x: Math.random() * (canvas.width - 30),
                     y: 0,
-                    symbol: types[Math.floor(Math.random() * types.length)],
-                    speed: 2 + Math.random() * 2
+                    symbol: isBomb ? '💣' : types[Math.floor(Math.random() * types.length)],
+                    isBomb: isBomb,
+                    speed: 2.2 + Math.random() * 2
                 });
             }
 
             function update() {
+                if(!gameActive) return;
+
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                ctx.font = "30px serif";
-                ctx.fillText("🧺", basketX, canvas.height - 10);
+                // Draw Basket
+                ctx.font = "28px serif";
+                ctx.fillText("🥣", basketX, canvas.height - 10);
 
-                if(Math.random() < 0.035) spawnItem();
+                if(Math.random() < 0.04) spawnItem();
 
                 items.forEach((item, index) => {
                     item.y += item.speed;
                     ctx.font = "20px serif";
                     ctx.fillText(item.symbol, item.x, item.y);
 
+                    // Catch detection
                     if(item.y >= canvas.height - 35 && item.x >= basketX - 15 && item.x <= basketX + 35) {
-                        items.splice(index, 1);
-                        score++;
-                        if(score >= 5) {
-                            cancelAnimationFrame(gameLoop);
-                            unlockNextLevel(4);
+                        if(item.isBomb) {
+                            // Hit bomb
+                            gameActive = false;
+                            alert("Eyvah bomba patladı! Tekrar dene hayatım ❤️");
+                            startLevel4(container);
+                        } else {
+                            items.splice(index, 1);
+                            score++;
+                            if(score >= 7) {
+                                gameActive = false;
+                                unlockNextLevel(4);
+                            }
                         }
                     } else if(item.y > canvas.height) {
                         items.splice(index, 1);
                     }
                 });
 
-                if(score < 5) gameLoop = requestAnimationFrame(update);
+                if(gameActive) requestAnimationFrame(update);
             }
 
             const handleMove = (e) => {
                 const rect = canvas.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 basketX = clientX - rect.left - 15;
+                if(basketX < 0) basketX = 0;
+                if(basketX > canvas.width - 30) basketX = canvas.width - 30;
             };
 
             canvas.addEventListener('mousemove', handleMove);
@@ -464,174 +587,237 @@
             update();
         }
 
-        // LEVEL 5: Runner (Engellerden Zıplama)
+        // ==========================================
+        // LEVEL 5: Engelli Koşu (Ceket Zıplama)
+        // ==========================================
         function startLevel5(container) {
             container.innerHTML = `
-                <div class="text-center mb-2">
-                    <h3 class="text-lg font-bold text-pink-300">Bölüm 5: Engelli Koşu 🏃‍♀️</h3>
-                    <p class="text-xs text-slate-300">Ekrana dokunarak zıpla, engelleri aş!</p>
+                <div class="text-center mb-1">
+                    <span class="text-[10px] bg-red-500/20 text-red-300 font-bold px-2.5 py-0.5 rounded-full border border-red-500/30">ZOR</span>
+                    <h3 class="title-font text-base font-bold text-pink-200 mt-0.5">Bölüm 5: Sıcak Ceket Koşusu 🧥</h3>
+                    <p class="text-[10px] text-slate-300">Ekrana dokunarak zıpla! 5 engeli aş!</p>
                 </div>
-                <canvas id="runnerCanvas" width="300" height="200" class="bg-slate-900 rounded-2xl border border-pink-500/30 shadow-inner"></canvas>
+                <canvas id="runnerCanvas" width="280" height="220" class="bg-slate-900/90 rounded-2xl border border-pink-500/30 shadow-inner cursor-pointer"></canvas>
             `;
 
             const canvas = document.getElementById('runnerCanvas');
             const ctx = canvas.getContext('2d');
-            let playerY = 140;
+            let playerY = 150;
             let velocityY = 0;
             let isJumping = false;
-            let obstacleX = 300;
+            let obstacleX = 280;
+            let obstacleSpeed = 3.5;
             let passedCount = 0;
-            let animationFrame;
+            let gameActive = true;
 
             function jump() {
-                if(!isJumping) {
-                    velocityY = -10;
+                if(!isJumping && gameActive) {
+                    velocityY = -10.5;
                     isJumping = true;
                 }
             }
 
             canvas.onclick = jump;
+            canvas.ontouchstart = (e) => { e.preventDefault(); jump(); };
 
             function update() {
+                if(!gameActive) return;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+                // Ground line
                 ctx.strokeStyle = '#f472b6';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo(0, 170);
-                ctx.lineTo(300, 170);
+                ctx.moveTo(0, 180);
+                ctx.lineTo(280, 180);
                 ctx.stroke();
 
-                velocityY += 0.6;
+                // Player physics
+                velocityY += 0.65;
                 playerY += velocityY;
-                if(playerY >= 140) {
-                    playerY = 140;
+                if(playerY >= 150) {
+                    playerY = 150;
                     isJumping = false;
                 }
 
-                ctx.font = "26px serif";
-                ctx.fillText("💃", 30, playerY);
+                // Player icon
+                ctx.font = "24px serif";
+                ctx.fillText("💃", 25, playerY);
 
-                obstacleX -= 4;
+                // Obstacle movement
+                obstacleX -= obstacleSpeed;
                 if(obstacleX < -20) {
-                    obstacleX = 300;
+                    obstacleX = 280;
+                    obstacleSpeed += 0.4; // Speed up each obstacle
                     passedCount++;
-                    if(passedCount >= 4) {
-                        cancelAnimationFrame(animationFrame);
+                    if(passedCount >= 5) {
+                        gameActive = false;
                         unlockNextLevel(5);
                         return;
                     }
                 }
-                ctx.fillText("📦", obstacleX, 150);
+                ctx.fillText("📦", obstacleX, 160);
 
-                if(obstacleX > 20 && obstacleX < 50 && playerY > 120) {
-                    obstacleX = 300;
+                // Collision detection
+                if(obstacleX > 15 && obstacleX < 45 && playerY > 125) {
+                    gameActive = false;
+                    alert("Engele takıldın güzelim! Tekrar dene.");
+                    startLevel5(container);
+                    return;
                 }
 
-                animationFrame = requestAnimationFrame(update);
+                if(gameActive) requestAnimationFrame(update);
             }
 
             update();
         }
 
-        // LEVEL 6: Timing Bar (Zamanlama Oyunu)
+        // ==========================================
+        // LEVEL 6: Tam Zamanlama (Maskara)
+        // ==========================================
         function startLevel6(container) {
             container.innerHTML = `
-                <div class="text-center mb-4">
-                    <h3 class="text-lg font-bold text-pink-300">Bölüm 6: Doğru Zamanlama 🎯</h3>
-                    <p class="text-xs text-slate-300">İbre ortadaki kalpli bölgeye gelince "DURDUR"a bas!</p>
+                <div class="text-center mb-3">
+                    <span class="text-[10px] bg-purple-500/20 text-purple-300 font-bold px-2.5 py-0.5 rounded-full border border-purple-500/30">ÇOK ZOR</span>
+                    <h3 class="title-font text-base font-bold text-pink-200 mt-1">Bölüm 6: Doğru Zamanlama 💄</h3>
+                    <p class="text-[11px] text-slate-300">İbre tam kalpli (❤️) alana gelince "DURDUR"a bas!</p>
                 </div>
-                <div class="w-full max-w-xs bg-slate-900 p-5 rounded-2xl border border-pink-500/30 flex flex-col items-center">
-                    <div class="w-full h-9 bg-slate-800 rounded-full relative overflow-hidden mb-6 border border-slate-700">
-                        <div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-16 bg-pink-500/40 border-x-2 border-pink-400 flex items-center justify-center text-xs">❤️</div>
-                        <div id="sliderPin" class="absolute top-0 bottom-0 w-3 bg-amber-300 rounded-full shadow-lg" style="left: 0%;"></div>
+                <div class="w-full max-w-xs bg-slate-900/90 p-4 rounded-2xl border border-pink-500/30 flex flex-col items-center shadow-inner">
+                    <div class="w-full h-8 bg-slate-800 rounded-full relative overflow-hidden mb-5 border border-slate-700">
+                        <div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-10 bg-pink-500/50 border-x-2 border-pink-400 flex items-center justify-center text-[10px]">❤️</div>
+                        <div id="sliderPin" class="absolute top-0 bottom-0 w-2.5 bg-amber-300 rounded-full shadow-md" style="left: 0%;"></div>
                     </div>
-                    <button id="stopBtn" class="px-8 py-3 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 font-bold rounded-xl text-white shadow-lg active:scale-95 transition">
-                        DURDUR!
+                    <button id="stopBtn" class="w-full py-3 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 font-bold rounded-xl text-white shadow-lg active:scale-95 transition text-xs">
+                        TAM ZAMANINDA DURDUR!
                     </button>
                 </div>
             `;
 
             const pin = document.getElementById('sliderPin');
             let pos = 0;
-            let dir = 2;
+            let dir = 2.8; // Faster speed
             let interval = setInterval(() => {
                 pos += dir;
                 if(pos >= 95 || pos <= 0) dir *= -1;
                 pin.style.left = `${pos}%`;
-            }, 20);
+            }, 18);
 
             document.getElementById('stopBtn').onclick = () => {
                 clearInterval(interval);
-                if(pos >= 38 && pos <= 62) {
+                // Target zone around 44% to 56%
+                if(pos >= 43 && pos <= 57) {
                     unlockNextLevel(6);
                 } else {
-                    alert("Ayy az kalsın Özden! Tekrar dene hayatım.");
+                    alert("Ayy ucuz atlattın Özden! Bir daha odaklanıp dene tatlım.");
                     startLevel6(container);
                 }
             };
         }
 
-        // LEVEL 7: Canvas Paint (Sürpriz Tuval)
+        // ==========================================
+        // LEVEL 7: Tuval Boyama (Fırça Seti Final)
+        // ==========================================
         function startLevel7(container) {
             container.innerHTML = `
-                <div class="text-center mb-2">
-                    <h3 class="text-lg font-bold text-pink-300">Final Bölümü: Sürpriz Tuval 🖌️</h3>
-                    <p class="text-xs text-slate-300">Parmağınla tuvali tamamen boyayarak büyük final hediyeni aç!</p>
+                <div class="text-center mb-1">
+                    <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30">BÜYÜK FİNAL</span>
+                    <h3 class="title-font text-base font-bold text-pink-200 mt-0.5">Final Bölümü: Sürpriz Tuval 🖌️</h3>
+                    <p class="text-[10px] text-slate-300">Parmağınla tuvali boyayarak büyük sürprizi ortaya çıkar!</p>
                 </div>
-                <canvas id="paintCanvas" width="280" height="240" class="bg-slate-900 rounded-2xl border border-pink-500/30 shadow-inner cursor-crosshair"></canvas>
-                <p class="text-xs text-pink-300 mt-2 font-semibold">Tamamlanan: %<span id="paintPercent">0</span></p>
+                <div class="relative rounded-2xl overflow-hidden border border-pink-500/30 shadow-inner">
+                    <canvas id="paintCanvas" width="270" height="220" class="bg-slate-950 cursor-crosshair"></canvas>
+                </div>
+                <div class="mt-2 text-xs text-pink-300 font-bold">Kaplama: %<span id="paintPercent">0</span>/75</div>
             `;
 
             const canvas = document.getElementById('paintCanvas');
             const ctx = canvas.getContext('2d');
             let isDrawing = false;
 
-            ctx.lineWidth = 22;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = '#ec4899';
+            // Draw hidden background surprise text first
+            ctx.fillStyle = '#1e1b4b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#f472b6';
+            ctx.font = "bold 16px Poppins";
+            ctx.textAlign = "center";
+            ctx.fillText("SENİ ÇOK SEVİYORUM", canvas.width/2, canvas.height/2 - 10);
+            ctx.fillText("ÖZDEN'İM! ❤️", canvas.width/2, canvas.height/2 + 15);
 
-            function draw(e) {
+            // Cover layer
+            const coverCanvas = document.createElement('canvas');
+            coverCanvas.width = canvas.width;
+            coverCanvas.height = canvas.height;
+            const coverCtx = coverCanvas.getContext('2d');
+            coverCtx.fillStyle = '#334155';
+            coverCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Initial render
+            function render() {
+                ctx.drawImage(coverCanvas, 0, 0);
+                // redraw text under transparent scratches
+            }
+
+            coverCtx.lineWidth = 26;
+            coverCtx.lineCap = 'round';
+            coverCtx.globalCompositeOperation = 'destination-out';
+
+            function scratch(e) {
                 if(!isDrawing) return;
                 const rect = canvas.getBoundingClientRect();
                 const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
                 const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
 
-                ctx.lineTo(x, y);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(x, y);
+                coverCtx.lineTo(x, y);
+                coverCtx.stroke();
+                coverCtx.beginPath();
+                coverCtx.moveTo(x, y);
 
                 checkCoverage();
             }
 
             function checkCoverage() {
-                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-                let colored = 0;
-                for(let i = 0; i < imgData.length; i += 16) {
-                    if(imgData[i+3] > 0) colored++;
+                const imgData = coverCtx.getImageData(0, 0, coverCanvas.width, coverCanvas.height).data;
+                let cleared = 0;
+                for(let i = 3; i < imgData.length; i += 16) {
+                    if(imgData[i] === 0) cleared++;
                 }
-                const percent = Math.min(100, Math.floor((colored / (imgData.length / 16)) * 100 * 1.5));
+                const percent = Math.min(100, Math.floor((cleared / (imgData.length / 16)) * 100 * 1.2));
                 document.getElementById('paintPercent').innerText = percent;
 
-                if(percent >= 60) {
+                if(percent >= 75) {
                     canvas.onmousemove = null;
                     canvas.ontouchmove = null;
-                    setTimeout(() => unlockNextLevel(7), 300);
+                    setTimeout(() => unlockNextLevel(7), 400);
                 }
             }
 
-            canvas.onmousedown = (e) => { isDrawing = true; ctx.beginPath(); draw(e); };
-            canvas.onmouseup = () => isDrawing = false;
-            canvas.onmousemove = draw;
+            // Combine both canvases
+            function animLoop() {
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#f472b6';
+                ctx.font = "bold 16px Poppins";
+                ctx.textAlign = "center";
+                ctx.fillText("SENİ ÇOK SEVİYORUM", canvas.width/2, canvas.height/2 - 10);
+                ctx.fillText("ÖZDEN'İM! ❤️", canvas.width/2, canvas.height/2 + 15);
+                
+                ctx.drawImage(coverCanvas, 0, 0);
+                if(isDrawing) requestAnimationFrame(animLoop);
+            }
 
-            canvas.ontouchstart = (e) => { isDrawing = true; ctx.beginPath(); draw(e); };
+            canvas.onmousedown = (e) => { isDrawing = true; coverCtx.beginPath(); scratch(e); animLoop(); };
+            canvas.onmouseup = () => isDrawing = false;
+            canvas.onmousemove = scratch;
+
+            canvas.ontouchstart = (e) => { isDrawing = true; coverCtx.beginPath(); scratch(e); animLoop(); };
             canvas.ontouchend = () => isDrawing = false;
-            canvas.ontouchmove = draw;
+            canvas.ontouchmove = scratch;
+
+            animLoop();
         }
 
         window.onload = () => {
-            loadLevel(currentLevel);
+            loadLevel(currentLevel <= 7 ? currentLevel : 7);
         };
     </script>
 </body>
