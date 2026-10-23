@@ -260,6 +260,14 @@
                     gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
                     osc.start();
                     osc.stop(audioCtx.currentTime + 0.25);
+                } else if (type === 'laser') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.15);
                 }
             } catch (e) { console.log(e); }
         }
@@ -376,11 +384,11 @@
             },
             { 
                 id: 8, 
-                title: "8. Bölüm: Renkli Sanat Savaşı", 
+                title: "8. Bölüm: Uzay Savaşı Finali", 
                 reward: "Makyaj & Fırça Seti 🖌️", 
                 icon: "fa-paint-brush", 
                 desc: "Tüm güzelliklerini ortaya çıkaracağın eksiksiz ve muhteşem fırça seti!",
-                note: "Sen benim hayatıma renk katan en güzel sanatsın Özden'im ❤️"
+                note: "Sen benim uzaydaki ve tüm evrendeki tek yıldızımsın Özden'im ❤️"
             }
         ];
 
@@ -478,17 +486,18 @@
         }
 
         // ==========================================
-        // LEVEL 1: Hızlı Yılan Avı (Çorap) - Geliştirilmiş Dokunmatik & Swipe
+        // LEVEL 1: Hızlı Yılan Avı (Çorap) - Düzeltilmiş Çarpışma & Hassas Grid
         // ==========================================
         function startLevel1(container) {
             container.innerHTML = `
                 <div class="text-center mb-2">
                     <span class="text-[10px] bg-pink-500/20 text-pink-300 font-bold px-2.5 py-0.5 rounded-full border border-pink-500/30">KOLAY - İSİNMA</span>
                     <h3 class="title-font text-base font-bold text-pink-200 mt-1">Bölüm 1: Çorap Avı 🧦</h3>
-                    <p class="text-[10px] text-slate-300">Parmağını ekranda kaydırarak (Swipe) veya yön tuşlarıyla 5 çorap topla!</p>
+                    <p class="text-[10px] text-slate-300">Ekranı parmağınla kaydırarak (Swipe) veya tuşlarla 5 çorap topla!</p>
+                    <div class="mt-1 text-xs font-bold text-pink-300">Toplanan: <span id="snakeScore">0</span> / 5</div>
                 </div>
                 <div class="relative">
-                    <canvas id="snakeCanvas" width="260" height="230" class="bg-slate-900/90 rounded-2xl border border-pink-500/30 shadow-inner"></canvas>
+                    <canvas id="snakeCanvas" width="260" height="220" class="bg-slate-900/90 rounded-2xl border border-pink-500/30 shadow-inner"></canvas>
                 </div>
                 <div class="grid grid-cols-3 gap-1.5 mt-2 w-40">
                     <div></div>
@@ -504,18 +513,22 @@
             const ctx = canvas.getContext('2d');
             const grid = 20;
             let score = 0;
-            let snake = [{x: 5*grid, y: 5*grid}];
+            let snake = [{x: 4*grid, y: 4*grid}, {x: 3*grid, y: 4*grid}];
             let dx = grid, dy = 0;
-            let food = {x: 8*grid, y: 8*grid};
+            let food = {x: 8*grid, y: 5*grid};
             let gameInterval;
 
             function placeFood() {
-                food.x = Math.floor(Math.random() * (canvas.width/grid)) * grid;
-                food.y = Math.floor(Math.random() * (canvas.height/grid)) * grid;
+                let valid = false;
+                while (!valid) {
+                    food.x = Math.floor(Math.random() * (canvas.width / grid)) * grid;
+                    food.y = Math.floor(Math.random() * (canvas.height / grid)) * grid;
+                    valid = !snake.some(part => part.x === food.x && part.y === food.y);
+                }
             }
 
             function update() {
-                const head = {x: snake[headPos()].x + dx, y: snake[0].y + dy};
+                const head = {x: snake[0].x + dx, y: snake[0].y + dy};
 
                 if (head.x < 0) head.x = canvas.width - grid;
                 if (head.x >= canvas.width) head.x = 0;
@@ -524,12 +537,14 @@
 
                 snake.unshift(head);
 
+                // Precise Hit Check
                 if (head.x === food.x && head.y === food.y) {
                     playSound('pop');
                     score++;
+                    document.getElementById('snakeScore').innerText = score;
                     if (score >= 5) {
                         clearInterval(gameInterval);
-                        unlockNextLevel(1);
+                        setTimeout(() => unlockNextLevel(1), 300);
                         return;
                     }
                     placeFood();
@@ -540,18 +555,30 @@
                 ctx.fillStyle = '#0f172a';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+                // Draw Grid Dots for visual clarity
+                ctx.fillStyle = 'rgba(244, 114, 182, 0.1)';
+                for (let x = 10; x < canvas.width; x += grid) {
+                    for (let y = 10; y < canvas.height; y += grid) {
+                        ctx.fillRect(x - 1, y - 1, 2, 2);
+                    }
+                }
+
+                // Render Food (Socks 🧦)
+                ctx.fillStyle = '#fb7185';
+                ctx.beginPath();
+                ctx.roundRect(food.x + 2, food.y + 2, grid - 4, grid - 4, 4);
+                ctx.fill();
+                ctx.font = "14px serif";
+                ctx.fillText("🧦", food.x + 1, food.y + 15);
+
+                // Render Snake
                 snake.forEach((part, index) => {
                     ctx.fillStyle = index === 0 ? '#f472b6' : '#ec4899';
                     ctx.beginPath();
-                    ctx.roundRect(part.x+1, part.y+1, grid-2, grid-2, 6);
+                    ctx.roundRect(part.x + 1, part.y + 1, grid - 2, grid - 2, 6);
                     ctx.fill();
                 });
-
-                ctx.font = "14px serif";
-                ctx.fillText("🧦", food.x + 2, food.y + 15);
             }
-
-            function headPos() { return 0; }
 
             gameInterval = setInterval(update, 130);
 
@@ -581,11 +608,11 @@
                 let diffY = touchEndY - touchStartY;
 
                 if (Math.abs(diffX) > Math.abs(diffY)) {
-                    if (diffX > 20) handleDir('RIGHT');
-                    else if (diffX < -20) handleDir('LEFT');
+                    if (diffX > 15) handleDir('RIGHT');
+                    else if (diffX < -15) handleDir('LEFT');
                 } else {
-                    if (diffY > 20) handleDir('DOWN');
-                    else if (diffY < -20) handleDir('UP');
+                    if (diffY > 15) handleDir('DOWN');
+                    else if (diffY < -15) handleDir('UP');
                 }
             }, { passive: true });
         }
@@ -1141,145 +1168,136 @@
         }
 
         // ==========================================
-        // LEVEL 8: Renkli Sanat Savaşı (Fırça Seti)
+        // LEVEL 8: Uzay Savaşı (Space Shooter - Fırça Seti)
         // ==========================================
         function startLevel8(container) {
             container.innerHTML = `
                 <div class="text-center mb-1">
-                    <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30">BÜYÜK FİNAL</span>
-                    <h3 class="title-font text-base font-bold text-pink-200 mt-0.5">Bölüm 8: Renkli Sanat Savaşı 🖌️</h3>
-                    <p class="text-[10px] text-slate-300">Fırçayı parmağınla kaydır! Renkli tuval damlalarını vur, siyah lekelerden kaç! 10 Puan topla!</p>
-                    <div class="mt-1 text-xs font-bold text-pink-300">Sanat Puanı: <span id="artScore">0</span> / 10</div>
+                    <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2.5 py-0.5 rounded-full border border-indigo-500/30">BÜYÜK FİNAL</span>
+                    <h3 class="title-font text-base font-bold text-pink-200 mt-0.5">Bölüm 8: Uzay Savaşı Finali 🚀</h3>
+                    <p class="text-[10px] text-slate-300">Parmağınla gemiyi sürükle! Asteroitleri (☄️) vur, 10 Puan topla!</p>
+                    <div class="mt-1 text-xs font-bold text-pink-300">Uzay Puanı: <span id="spaceScore">0</span> / 10</div>
                 </div>
-                <div class="relative w-full max-w-xs flex justify-center">
-                    <canvas id="artShooterCanvas" width="280" height="260" class="bg-slate-900/90 rounded-2xl border border-pink-500/40 shadow-inner cursor-pointer"></canvas>
+                <div class="relative w-full max-w-xs flex flex-col items-center">
+                    <canvas id="spaceShooterCanvas" width="280" height="260" class="bg-slate-950/90 rounded-2xl border border-indigo-500/40 shadow-inner cursor-pointer"></canvas>
+                    <button id="btnSpaceFire" class="w-full mt-2 py-2.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-xl text-white font-bold text-xs shadow border border-indigo-300/40 active:scale-95">
+                        LAZER ATEŞİ! ⚡
+                    </button>
                 </div>
             `;
 
-            const canvas = document.getElementById('artShooterCanvas');
+            const canvas = document.getElementById('spaceShooterCanvas');
             const ctx = canvas.getContext('2d');
 
             let playerX = 140;
             let score = 0;
             let targetScore = 10;
             let gameActive = true;
-            let bullets = [];
-            let targets = [];
-            let lastShot = 0;
+            let lasers = [];
+            let asteroids = [];
+            let animationFrameId;
 
-            function spawnTarget() {
+            function spawnAsteroid() {
                 if (!gameActive) return;
-                const isBad = Math.random() < 0.25;
-                const colors = ['#f472b6', '#38bdf8', '#fb7185', '#a855f7', '#f59e0b'];
-                targets.push({
-                    x: Math.random() * (canvas.width - 30) + 15,
+                asteroids.push({
+                    x: Math.random() * (canvas.width - 40) + 20,
                     y: -20,
-                    radius: 12,
-                    isBad: isBad,
-                    color: isBad ? '#1e293b' : colors[Math.floor(Math.random() * colors.length)],
-                    speed: 1.5 + Math.random() * 1.5
+                    speed: 1.2 + Math.random() * 1.5,
+                    size: 22
                 });
             }
 
-            const handleInput = (e) => {
+            function fireLaser() {
+                if (!gameActive) return;
+                playSound('laser');
+                lasers.push({ x: playerX, y: canvas.height - 35, speed: 7 });
+            }
+
+            document.getElementById('btnSpaceFire').onclick = fireLaser;
+            canvas.onclick = fireLaser;
+
+            const handleMove = (e) => {
                 const rect = canvas.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 playerX = clientX - rect.left;
-                if (playerX < 20) playerX = 20;
-                if (playerX > canvas.width - 20) playerX = canvas.width - 20;
+                if (playerX < 15) playerX = 15;
+                if (playerX > canvas.width - 15) playerX = canvas.width - 15;
             };
 
-            canvas.addEventListener('mousemove', handleInput);
-            canvas.addEventListener('touchmove', handleInput);
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('touchmove', handleMove);
 
             function update() {
                 if (!gameActive) return;
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Auto Shoot Magic Paint Bullets
-                const now = Date.now();
-                if (now - lastShot > 280) {
-                    bullets.push({ x: playerX, y: canvas.height - 35, speed: 6 });
-                    lastShot = now;
+                // Draw Stars Background
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                for (let i = 0; i < 15; i++) {
+                    ctx.fillRect((i * 37) % canvas.width, (i * 53 + Date.now() * 0.05) % canvas.height, 2, 2);
                 }
 
-                // Render & Update Bullets
-                bullets.forEach((b, bi) => {
-                    b.y -= b.speed;
-                    ctx.fillStyle = '#f472b6';
-                    ctx.shadowColor = '#ec4899';
-                    ctx.shadowBlur = 6;
-                    ctx.beginPath();
-                    ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
-                    ctx.fill();
+                // Render & Update Lasers
+                lasers.forEach((l, li) => {
+                    l.y -= l.speed;
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.shadowColor = '#0284c7';
+                    ctx.shadowBlur = 8;
+                    ctx.fillRect(l.x - 2, l.y, 4, 10);
                     ctx.shadowBlur = 0;
 
-                    if (b.y < -10) bullets.splice(bi, 1);
+                    if (l.y < -10) lasers.splice(li, 1);
                 });
 
-                // Spawn targets periodically
-                if (Math.random() < 0.04) spawnTarget();
+                // Spawn Asteroids
+                if (Math.random() < 0.035) spawnAsteroid();
 
-                // Render & Update Targets
-                targets.forEach((t, ti) => {
-                    t.y += t.speed;
+                // Render & Update Asteroids
+                asteroids.forEach((a, ai) => {
+                    a.y += a.speed;
+                    ctx.font = "20px serif";
+                    ctx.fillText("☄️", a.x - 10, a.y);
 
-                    ctx.fillStyle = t.color;
-                    ctx.strokeStyle = t.isBad ? '#f43f5e' : '#ffffff';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
+                    // Check Laser Hit
+                    lasers.forEach((l, li) => {
+                        const dist = Math.hypot(l.x - a.x, l.y - a.y);
+                        if (dist < a.size) {
+                            playSound('pop');
+                            score++;
+                            document.getElementById('spaceScore').innerText = score;
+                            asteroids.splice(ai, 1);
+                            lasers.splice(li, 1);
 
-                    // Bullet Collision
-                    bullets.forEach((b, bi) => {
-                        const dist = Math.hypot(b.x - t.x, b.y - t.y);
-                        if (dist < t.radius + 4) {
-                            if (t.isBad) {
-                                playSound('fail');
+                            if (score >= targetScore) {
                                 gameActive = false;
-                                alert("Siyah lekeye çarptın Özden'im! Resim bozuldu, tekrar dene ❤️");
-                                startLevel8(container);
+                                cancelAnimationFrame(animationFrameId);
+                                setTimeout(() => unlockNextLevel(8), 300);
                                 return;
-                            } else {
-                                playSound('pop');
-                                score++;
-                                document.getElementById('artScore').innerText = score;
-                                targets.splice(ti, 1);
-                                bullets.splice(bi, 1);
-
-                                if (score >= targetScore) {
-                                    gameActive = false;
-                                    setTimeout(() => unlockNextLevel(8), 300);
-                                    return;
-                                }
                             }
                         }
                     });
 
-                    // Target reaches bottom or collides with player
-                    if (t.y > canvas.height - 25 && Math.abs(t.x - playerX) < 25) {
-                        if (t.isBad) {
-                            playSound('fail');
-                            gameActive = false;
-                            alert("Siyah lekeye çarptın Özden'im! Tekrar dene ❤️");
-                            startLevel8(container);
-                            return;
-                        }
+                    // Check Player Collision
+                    if (a.y > canvas.height - 35 && Math.abs(a.x - playerX) < 22) {
+                        playSound('fail');
+                        gameActive = false;
+                        cancelAnimationFrame(animationFrameId);
+                        alert("Asteroide çarptın Özden'im! Gemiyi dikkatli sür, tekrar dene ❤️");
+                        startLevel8(container);
+                        return;
                     }
 
-                    if (t.y > canvas.height + 20) {
-                        targets.splice(ti, 1);
+                    if (a.y > canvas.height + 20) {
+                        asteroids.splice(ai, 1);
                     }
                 });
 
-                // Draw Player Brush Launcher
-                ctx.font = "24px serif";
-                ctx.fillText("🖌️", playerX - 12, canvas.height - 8);
+                // Draw Player Spacecraft
+                ctx.font = "26px serif";
+                ctx.fillText("🚀", playerX - 13, canvas.height - 8);
 
-                if (gameActive) requestAnimationFrame(update);
+                if (gameActive) animationFrameId = requestAnimationFrame(update);
             }
 
             update();
