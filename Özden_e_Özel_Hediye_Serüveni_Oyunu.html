@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enver'in Özden'e Hediye Avı ❤️</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti for celebrations -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #31102f 50%, #1e1b4b 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(244, 114, 182, 0.2);
+        }
+        .card-flip {
+            perspective: 1000px;
+        }
+        .card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card-inner.flipped {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            backface-visibility: hidden;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Header Navigation -->
+    <header class="w-full glass-panel sticky top-0 z-40 px-4 py-3 border-b border-rose-500/30">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl text-white shadow-lg shadow-pink-500/30">
+                    <i class="fa-solid fa-heart text-xl animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-rose-300 to-indigo-200">
+                        Enver & Özden Hediye Serüveni ✨
+                    </h1>
+                    <p class="text-xs text-rose-300/80">7 Eğlenceli Bölüm, 7 Gizemli Hediye!</p>
+                </div>
+            </div>
+            <button onclick="resetProgress()" class="text-xs text-slate-400 hover:text-rose-400 transition flex items-center gap-1">
+                <i class="fa-solid fa-rotate-right"></i> Sıfırla
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-5xl w-full mx-auto p-4 flex flex-col gap-5">
+
+        <!-- Banner Greeting -->
+        <div class="glass-panel p-4 rounded-2xl border border-pink-500/30 text-center relative overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 text-pink-500/10 text-7xl select-none pointer-events-none">❤️</div>
+            <h2 class="text-lg font-bold text-pink-300">Hoş geldin Özden! Enver'in Hediye Avına Hoş Geldin 💕</h2>
+            <p class="text-xs text-slate-300 mt-1">
+                Senin için hazırladığım mini oyunları tamamladıkça sürpriz hediyelerini birer birer açacaksın! Bakalım tüm bölümleri geçebilecek misin?
+            </p>
+        </div>
+
+        <!-- Levels Map / Progress Bar -->
+        <section class="glass-panel p-4 rounded-2xl border border-slate-700">
+            <h2 class="text-xs font-semibold text-rose-300 mb-3 uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-map-location-dot"></i> Gizemli Bölümler
+            </h2>
+            <div class="grid grid-cols-7 gap-2" id="levelSelector">
+                <!-- Level buttons inserted dynamically -->
+            </div>
+        </section>
+
+        <!-- Active Game Container -->
+        <section class="glass-panel p-5 rounded-3xl flex-1 flex flex-col justify-center items-center relative overflow-hidden min-h-[420px] border border-rose-500/20" id="gameArea">
+            <!-- Dynamic game views will render here -->
+        </section>
+
+    </main>
+
+    <!-- Modal for Reward Unlocked -->
+    <div id="rewardModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+        <div class="glass-panel max-w-md w-full p-6 rounded-3xl text-center border-2 border-pink-500/40 shadow-2xl relative">
+            <div class="w-20 h-20 bg-gradient-to-tr from-pink-500 to-rose-400 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-4xl shadow-xl shadow-pink-500/30">
+                <i id="rewardIcon" class="fa-solid fa-gift"></i>
+            </div>
+            <span class="bg-pink-500/20 text-pink-300 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-pink-500/30">
+                Tebrikler Özdenim! 🎉
+            </span>
+            <h3 class="text-2xl font-bold text-white mt-3" id="rewardTitle">Sürpriz Hediyen Açıldı!</h3>
+            <p class="text-slate-300 text-sm mt-2 leading-relaxed" id="rewardDesc">
+                Harika bir iş çıkardın birtanem!
+            </p>
+            <div class="bg-slate-800/90 p-3.5 rounded-2xl border border-pink-500/30 mt-4 text-xs text-pink-200 shadow-inner">
+                🎁 <span class="font-bold">Enver'in Notu:</span> Bu hediye seni bekliyor güzelim! Şimdi yanıma gelip sarılarak hediyeni isteyebilirsin ❤️
+            </div>
+            <button onclick="closeRewardModal()" class="w-full mt-5 py-3.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-semibold rounded-xl shadow-lg shadow-pink-500/20 transition active:scale-95">
+                Sonraki Sürprize Geç <i class="fa-solid fa-arrow-right ml-1"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Game Configurations & Custom Messages for Özden & Enver
+        const LEVELS = [
+            { id: 1, title: "1. Gizemli Sürpriz", reward: "Sıcak Tutacak Tatlı Çoraplar 🧦", icon: "fa-socks", desc: "Soğuk günlerde Özden'imin narin ayaklarını sıcacık tutacak sevimli çoraplar kazandın!" },
+            { id: 2, title: "2. Gizemli Sürpriz", reward: "Rahatlatıcı Stres Küpü 🧊", icon: "fa-cube", desc: "Seni hiç yormasınlar, stresini alıp götürecek tatlı bir yardımcın olsun diye!" },
+            { id: 3, title: "3. Gizemli Sürpriz", reward: "Işıl Işıl Kolye 💎", icon: "fa-gem", desc: "Güzelliğine güzellik katacak, boynuna çok yakışacak zarafette harika bir kolye!" },
+            { id: 4, title: "4. Gizemli Sürpriz", reward: "Özel Noodle Kasesi 🍜", icon: "fa-bowl-food", desc: "En lezzetli noodle'ları afiyetle ye diye Özden'e özel tatlı kase!" },
+            { id: 5, title: "5. Gizemli Sürpriz", reward: "Şık ve Sıcak Ceket 🧥", icon: "fa-vest", desc: "Sana çok yakışacak, seni soğuktan koruyup sarıp sarmalayacak harika bir ceket!" },
+            { id: 6, title: "6. Gizemli Sürpriz", reward: "Harika Maskara 💄", icon: "fa-wand-magic-sparkles", desc: "Zaten dünyalara bedel olan güzel gözlerinin ışıltısına ışıltı katacak maskara!" },
+            { id: 7, title: "7. Gizemli Sürpriz", reward: "Makyaj & Sanat Fırça Seti 🖌️", icon: "fa-paint-brush", desc: "Tüm güzelliklerini ortaya çıkaracağın eksiksiz ve muhteşem fırça seti!" }
+        ];
+
+        let currentLevel = parseInt(localStorage.getItem('unlockedLevel_ozden')) || 1;
+        let activeLevelView = currentLevel;
+
+        function renderLevelSelector() {
+            const container = document.getElementById('levelSelector');
+            container.innerHTML = '';
+
+            LEVELS.forEach(lvl => {
+                const isUnlocked = lvl.id <= currentLevel;
+                const isActive = lvl.id === activeLevelView;
+                
+                const btn = document.createElement('button');
+                btn.className = `p-2 rounded-xl flex flex-col items-center justify-center transition border ${
+                    isActive ? 'bg-gradient-to-b from-pink-500 to-rose-600 text-white border-pink-300 ring-2 ring-pink-400/50 shadow-lg' : 
+                    isUnlocked ? 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700' : 
+                    'bg-slate-900/50 text-slate-600 border-slate-800/80 cursor-not-allowed'
+                }`;
+                btn.disabled = !isUnlocked;
+                btn.onclick = () => loadLevel(lvl.id);
+
+                btn.innerHTML = `
+                    <div class="text-base mb-1">
+                        <i class="fa-solid ${isUnlocked ? 'fa-gift' : 'fa-lock'}"></i>
+                    </div>
+                    <span class="text-[10px] font-bold">Bölüm ${lvl.id}</span>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function loadLevel(levelId) {
+            activeLevelView = levelId;
+            renderLevelSelector();
+            const gameArea = document.getElementById('gameArea');
+            gameArea.innerHTML = '';
+
+            switch(levelId) {
+                case 1: startLevel1(gameArea); break;
+                case 2: startLevel2(gameArea); break;
+                case 3: startLevel3(gameArea); break;
+                case 4: startLevel4(gameArea); break;
+                case 5: startLevel5(gameArea); break;
+                case 6: startLevel6(gameArea); break;
+                case 7: startLevel7(gameArea); break;
+            }
+        }
+
+        function unlockNextLevel(completedLevel) {
+            confetti({
+                particleCount: 120,
+                spread: 80,
+                origin: { y: 0.6 },
+                colors: ['#f472b6', '#fb7185', '#e879f9', '#ffffff']
+            });
+
+            const lvlData = LEVELS.find(l => l.id === completedLevel);
+            document.getElementById('rewardIcon').className = `fa-solid ${lvlData.icon}`;
+            document.getElementById('rewardTitle').innerText = `Açılan Hediye: ${lvlData.reward}`;
+            document.getElementById('rewardDesc').innerText = lvlData.desc;
+            document.getElementById('rewardModal').classList.remove('hidden');
+
+            if (completedLevel >= currentLevel && currentLevel < 7) {
+                currentLevel = completedLevel + 1;
+                localStorage.setItem('unlockedLevel_ozden', currentLevel);
+            }
+        }
+
+        function closeRewardModal() {
+            document.getElementById('rewardModal').classList.add('hidden');
+            if (activeLevelView < 7) {
+                loadLevel(activeLevelView + 1);
+            } else {
+                renderLevelSelector();
+            }
+        }
+
+        function resetProgress() {
+            if(confirm("Tüm bölümleri sıfırlayıp baştan oynamak ister misin Özden?")) {
+                localStorage.removeItem('unlockedLevel_ozden');
+                currentLevel = 1;
+                loadLevel(1);
+            }
+        }
+
+        // LEVEL 1: Snake (Gizemli Toplama Oyunu)
+        function startLevel1(container) {
+            container.innerHTML = `
+                <div class="text-center mb-2">
+                    <h3 class="text-lg font-bold text-pink-300">Bölüm 1: Minik İpucu Avı 🎁</h3>
+                    <p class="text-xs text-slate-300">Yön tuşları veya butonlarla ekrandaki 5 sembolü topla ve ilk sürprizi aç!</p>
+                </div>
+                <div class="relative">
+                    <canvas id="snakeCanvas" width="280" height="280" class="bg-slate-900 rounded-2xl border border-pink-500/30 shadow-inner"></canvas>
+                </div>
+                <div class="grid grid-cols-3 gap-2 mt-4 w-48">
+                    <div></div>
+                    <button id="btnUp" class="p-3 bg-slate-800 hover:bg-pink-600 rounded-xl text-white active:scale-95 border border-slate-700"><i class="fa-solid fa-arrow-up"></i></button>
+                    <div></div>
+                    <button id="btnLeft" class="p-3 bg-slate-800 hover:bg-pink-600 rounded-xl text-white active:scale-95 border border-slate-700"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button id="btnDown" class="p-3 bg-slate-800 hover:bg-pink-600 rounded-xl text-white active:scale-95 border border-slate-700"><i class="fa-solid fa-arrow-down"></i></button>
+                    <button id="btnRight" class="p-3 bg-slate-800 hover:bg-pink-600 rounded-xl text-white active:scale-95 border border-slate-700"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            `;
+
+            const canvas = document.getElementById('snakeCanvas');
+            const ctx = canvas.getContext('2d');
+            const grid = 14;
+            let score = 0;
+            let snake = [{x: 7*grid, y: 7*grid}];
+            let dx = grid, dy = 0;
+            let food = {x: 3*grid, y: 3*grid};
+            let gameInterval;
+
+            function placeFood() {
+                food.x = Math.floor(Math.random() * (canvas.width/grid)) * grid;
+                food.y = Math.floor(Math.random() * (canvas.height/grid)) * grid;
+            }
+
+            function update() {
+                const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+
+                if (head.x < 0) head.x = canvas.width - grid;
+                if (head.x >= canvas.width) head.x = 0;
+                if (head.y < 0) head.y = canvas.height - grid;
+                if (head.y >= canvas.height) head.y = 0;
+
+                snake.unshift(head);
+
+                if (head.x === food.x && head.y === food.y) {
+                    score++;
+                    if (score >= 5) {
+                        clearInterval(gameInterval);
+                        unlockNextLevel(1);
+                        return;
+                    }
+                    placeFood();
+                } else {
+                    snake.pop();
+                }
+
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#ec4899';
+                snake.forEach((part) => {
+                    ctx.beginPath();
+                    ctx.roundRect(part.x, part.y, grid-1, grid-1, 4);
+                    ctx.fill();
+                });
+
+                ctx.font = "12px serif";
+                ctx.fillText("🎁", food.x, food.y + 12);
+            }
+
+            gameInterval = setInterval(update, 150);
+
+            const handleDir = (dir) => {
+                if(dir==='UP' && dy===0){ dx=0; dy=-grid; }
+                if(dir==='DOWN' && dy===0){ dx=0; dy=grid; }
+                if(dir==='LEFT' && dx===0){ dx=-grid; dy=0; }
+                if(dir==='RIGHT' && dx===0){ dx=grid; dy=0; }
+            };
+
+            document.getElementById('btnUp').onclick = () => handleDir('UP');
+            document.getElementById('btnDown').onclick = () => handleDir('DOWN');
+            document.getElementById('btnLeft').onclick = () => handleDir('LEFT');
+            document.getElementById('btnRight').onclick = () => handleDir('RIGHT');
+
+            window.onkeydown = (e) => {
+                if(e.key==='ArrowUp') handleDir('UP');
+                if(e.key==='ArrowDown') handleDir('DOWN');
+                if(e.key==='ArrowLeft') handleDir('LEFT');
+                if(e.key==='ArrowRight') handleDir('RIGHT');
+            };
+        }
+
+        // LEVEL 2: Memory Game (Hafıza Kartları)
+        function startLevel2(container) {
+            container.innerHTML = `
+                <div class="text-center mb-4">
+                    <h3 class="text-lg font-bold text-pink-300">Bölüm 2: Sevgi Kartları 💖</h3>
+                    <p class="text-xs text-slate-300">Tüm kartları eşleştirip 2. sürpriz hediyenin kilidini aç!</p>
+                </div>
+                <div class="grid grid-cols-4 gap-2.5 max-w-xs w-full" id="memoryGrid"></div>
+            `;
+
+            const icons = ['❤️', '⭐', '✨', '🎁', '🎈', '🌸'];
+            const cards = [...icons, ...icons].sort(() => Math.random() - 0.5);
+            let flipped = [];
+            let matchedCount = 0;
+
+            const grid = document.getElementById('memoryGrid');
+            cards.forEach((symbol, index) => {
+                const card = document.createElement('div');
+                card.className = 'card-flip h-16 cursor-pointer';
+                card.innerHTML = `
+                    <div class="card-inner w-full h-full relative rounded-xl shadow-lg" data-symbol="${symbol}" data-index="${index}">
+                        <div class="card-front absolute inset-0 bg-slate-800 border border-pink-500/30 flex items-center justify-center rounded-xl text-xl text-pink-400">❓</div>
+                        <div class="card-back absolute inset-0 bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center rounded-xl text-2xl">${symbol}</div>
+                    </div>
+                `;
+                
+                card.onclick = () => {
+                    const inner = card.querySelector('.card-inner');
+                    if (flipped.length < 2 && !inner.classList.contains('flipped')) {
+                        inner.classList.add('flipped');
+                        flipped.push(inner);
+
+                        if (flipped.length === 2) {
+                            if (flipped[0].dataset.symbol === flipped[1].dataset.symbol) {
+                                matchedCount += 2;
+                                flipped = [];
+                                if (matchedCount === cards.length) {
+                                    setTimeout(() => unlockNextLevel(2), 500);
+                                }
+                            } else {
+                                setTimeout(() => {
+                                    flipped[0].classList.remove('flipped');
+                                    flipped[1].classList.remove('flipped');
+                                    flipped = [];
+                                }, 800);
+                            }
+                        }
+                    }
+                };
+                grid.appendChild(card);
+            });
+        }
+
+        // LEVEL 3: Catch Target (Hedef Tıklama)
+        function startLevel3(container) {
+            let score = 0;
+            container.innerHTML = `
+                <div class="text-center mb-4">
+                    <h3 class="text-lg font-bold text-pink-300">Bölüm 3: Refleks Testi ✨</h3>
+                    <p class="text-xs text-slate-300">Ekranda beliren parlak yıldıza 7 kez dokun!</p>
+                    <div class="mt-2 text-sm font-bold text-pink-400">Skor: <span id="clickScore">0</span>/7</div>
+                </div>
+                <div id="catchArea" class="w-full h-64 bg-slate-900 rounded-2xl border border-pink-500/30 relative overflow-hidden">
+                    <button id="targetJewel" class="absolute text-4xl transition-all duration-300 p-2 active:scale-95" style="top: 40%; left: 42%;">⭐</button>
+                </div>
+            `;
+
+            const btn = document.getElementById('targetJewel');
+            const scoreEl = document.getElementById('clickScore');
+            const area = document.getElementById('catchArea');
+
+            function moveTarget() {
+                const maxX = area.clientWidth - 50;
+                const maxY = area.clientHeight - 50;
+                const randomX = Math.floor(Math.random() * maxX);
+                const randomY = Math.floor(Math.random() * maxY);
+                btn.style.left = `${randomX}px`;
+                btn.style.top = `${randomY}px`;
+            }
+
+            btn.onclick = () => {
+                score++;
+                scoreEl.innerText = score;
+                if(score >= 7) {
+                    unlockNextLevel(3);
+                } else {
+                    moveTarget();
+                }
+            };
+        }
+
+        // LEVEL 4: Catch Fallers (Düşen Objeleri Yakalama)
+        function startLevel4(container) {
+            container.innerHTML = `
+                <div class="text-center mb-2">
+                    <h3 class="text-lg font-bold text-pink-300">Bölüm 4: Lezzet Yakalama 😋</h3>
+                    <p class="text-xs text-slate-300">Sepeti sağa-sola kaydırarak 5 lezzetli sembolü yakala!</p>
+                </div>
+                <canvas id="noodleCanvas" width="300" height="280" class="bg-slate-900 rounded-2xl border border-pink-500/30 shadow-inner"></canvas>
+            `;
+
+            const canvas = document.getElementById('noodleCanvas');
+            const ctx = canvas.getContext('2d');
+            let basketX = 120;
+            let score = 0;
+            let items = [];
+            let gameLoop;
+
+            function spawnItem() {
+                const types = ['🍎', '🍓', '🍒', '🍭'];
+                items.push({
+                    x: Math.random() * (canvas.width - 30),
+                    y: 0,
+                    symbol: types[Math.floor(Math.random() * types.length)],
+                    speed: 2 + Math.random() * 2
+                });
+            }
+
+            function update() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.font = "30px serif";
+                ctx.fillText("🧺", basketX, canvas.height - 10);
+
+                if(Math.random() < 0.035) spawnItem();
+
+                items.forEach((item, index) => {
+                    item.y += item.speed;
+                    ctx.font = "20px serif";
+                    ctx.fillText(item.symbol, item.x, item.y);
+
+                    if(item.y >= canvas.height - 35 && item.x >= basketX - 15 && item.x <= basketX + 35) {
+                        items.splice(index, 1);
+                        score++;
+                        if(score >= 5) {
+                            cancelAnimationFrame(gameLoop);
+                            unlockNextLevel(4);
+                        }
+                    } else if(item.y > canvas.height) {
+                        items.splice(index, 1);
+                    }
+                });
+
+                if(score < 5) gameLoop = requestAnimationFrame(update);
+            }
+
+            const handleMove = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                basketX = clientX - rect.left - 15;
+            };
+
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('touchmove', handleMove);
+            update();
+        }
+
+        // LEVEL 5: Runner (Engellerden Zıplama)
+        function startLevel5(container) {
+            container.innerHTML = `
+                <div class="text-center mb-2">
+                    <h3 class="text-lg font-bold text-pink-300">Bölüm 5: Engelli Koşu 🏃‍♀️</h3>
+                    <p class="text-xs text-slate-300">Ekrana dokunarak zıpla, engelleri aş!</p>
+                </div>
+                <canvas id="runnerCanvas" width="300" height="200" class="bg-slate-900 rounded-2xl border border-pink-500/30 shadow-inner"></canvas>
+            `;
+
+            const canvas = document.getElementById('runnerCanvas');
+            const ctx = canvas.getContext('2d');
+            let playerY = 140;
+            let velocityY = 0;
+            let isJumping = false;
+            let obstacleX = 300;
+            let passedCount = 0;
+            let animationFrame;
+
+            function jump() {
+                if(!isJumping) {
+                    velocityY = -10;
+                    isJumping = true;
+                }
+            }
+
+            canvas.onclick = jump;
+
+            function update() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.strokeStyle = '#f472b6';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, 170);
+                ctx.lineTo(300, 170);
+                ctx.stroke();
+
+                velocityY += 0.6;
+                playerY += velocityY;
+                if(playerY >= 140) {
+                    playerY = 140;
+                    isJumping = false;
+                }
+
+                ctx.font = "26px serif";
+                ctx.fillText("💃", 30, playerY);
+
+                obstacleX -= 4;
+                if(obstacleX < -20) {
+                    obstacleX = 300;
+                    passedCount++;
+                    if(passedCount >= 4) {
+                        cancelAnimationFrame(animationFrame);
+                        unlockNextLevel(5);
+                        return;
+                    }
+                }
+                ctx.fillText("📦", obstacleX, 150);
+
+                if(obstacleX > 20 && obstacleX < 50 && playerY > 120) {
+                    obstacleX = 300;
+                }
+
+                animationFrame = requestAnimationFrame(update);
+            }
+
+            update();
+        }
+
+        // LEVEL 6: Timing Bar (Zamanlama Oyunu)
+        function startLevel6(container) {
+            container.innerHTML = `
+                <div class="text-center mb-4">
+                    <h3 class="text-lg font-bold text-pink-300">Bölüm 6: Doğru Zamanlama 🎯</h3>
+                    <p class="text-xs text-slate-300">İbre ortadaki kalpli bölgeye gelince "DURDUR"a bas!</p>
+                </div>
+                <div class="w-full max-w-xs bg-slate-900 p-5 rounded-2xl border border-pink-500/30 flex flex-col items-center">
+                    <div class="w-full h-9 bg-slate-800 rounded-full relative overflow-hidden mb-6 border border-slate-700">
+                        <div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-16 bg-pink-500/40 border-x-2 border-pink-400 flex items-center justify-center text-xs">❤️</div>
+                        <div id="sliderPin" class="absolute top-0 bottom-0 w-3 bg-amber-300 rounded-full shadow-lg" style="left: 0%;"></div>
+                    </div>
+                    <button id="stopBtn" class="px-8 py-3 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 font-bold rounded-xl text-white shadow-lg active:scale-95 transition">
+                        DURDUR!
+                    </button>
+                </div>
+            `;
+
+            const pin = document.getElementById('sliderPin');
+            let pos = 0;
+            let dir = 2;
+            let interval = setInterval(() => {
+                pos += dir;
+                if(pos >= 95 || pos <= 0) dir *= -1;
+                pin.style.left = `${pos}%`;
+            }, 20);
+
+            document.getElementById('stopBtn').onclick = () => {
+                clearInterval(interval);
+                if(pos >= 38 && pos <= 62) {
+                    unlockNextLevel(6);
+                } else {
+                    alert("Ayy az kalsın Özden! Tekrar dene hayatım.");
+                    startLevel6(container);
+                }
+            };
+        }
+
+        // LEVEL 7: Canvas Paint (Sürpriz Tuval)
+        function startLevel7(container) {
+            container.innerHTML = `
+                <div class="text-center mb-2">
+                    <h3 class="text-lg font-bold text-pink-300">Final Bölümü: Sürpriz Tuval 🖌️</h3>
+                    <p class="text-xs text-slate-300">Parmağınla tuvali tamamen boyayarak büyük final hediyeni aç!</p>
+                </div>
+                <canvas id="paintCanvas" width="280" height="240" class="bg-slate-900 rounded-2xl border border-pink-500/30 shadow-inner cursor-crosshair"></canvas>
+                <p class="text-xs text-pink-300 mt-2 font-semibold">Tamamlanan: %<span id="paintPercent">0</span></p>
+            `;
+
+            const canvas = document.getElementById('paintCanvas');
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+
+            ctx.lineWidth = 22;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#ec4899';
+
+            function draw(e) {
+                if(!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+
+                checkCoverage();
+            }
+
+            function checkCoverage() {
+                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                let colored = 0;
+                for(let i = 0; i < imgData.length; i += 16) {
+                    if(imgData[i+3] > 0) colored++;
+                }
+                const percent = Math.min(100, Math.floor((colored / (imgData.length / 16)) * 100 * 1.5));
+                document.getElementById('paintPercent').innerText = percent;
+
+                if(percent >= 60) {
+                    canvas.onmousemove = null;
+                    canvas.ontouchmove = null;
+                    setTimeout(() => unlockNextLevel(7), 300);
+                }
+            }
+
+            canvas.onmousedown = (e) => { isDrawing = true; ctx.beginPath(); draw(e); };
+            canvas.onmouseup = () => isDrawing = false;
+            canvas.onmousemove = draw;
+
+            canvas.ontouchstart = (e) => { isDrawing = true; ctx.beginPath(); draw(e); };
+            canvas.ontouchend = () => isDrawing = false;
+            canvas.ontouchmove = draw;
+        }
+
+        window.onload = () => {
+            loadLevel(currentLevel);
+        };
+    </script>
+</body>
+</html>
