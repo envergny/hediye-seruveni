@@ -298,14 +298,17 @@
         // TARGET LOCK DATE: 24 October 2026, 19:00:00 (Local Time)
         const TARGET_DATE = new Date(2026, 9, 24, 19, 0, 0).getTime();
         const SECRET_PASS = "enverozden";
+        let sessionUnlocked = false;
 
         function updateCountdown() {
             const now = new Date().getTime();
             const diff = TARGET_DATE - now;
 
-            if (diff <= 0 || localStorage.getItem('unlocked_by_pass_ozden') === 'true') {
+            if (diff <= 0 || sessionUnlocked) {
                 document.getElementById('lockOverlay').classList.add('hidden');
                 return;
+            } else {
+                document.getElementById('lockOverlay').classList.remove('hidden');
             }
 
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -338,7 +341,7 @@
             const input = document.getElementById('secretPassInput').value.trim().toLowerCase();
             if (input === SECRET_PASS) {
                 playSound('victory');
-                localStorage.setItem('unlocked_by_pass_ozden', 'true');
+                sessionUnlocked = true;
                 closePassModal();
                 document.getElementById('lockOverlay').classList.add('hidden');
             } else {
@@ -379,7 +382,7 @@
                 reward: "Işıl Işıl Kolye 💎", 
                 icon: "fa-gem", 
                 desc: "Güzelliğine güzellik katacak, boynuna çok yakışacak zarafette harika bir kolye!",
-                note: "Bu kolyeyi boynuna kendi hands'imle takmak için sabırsızlanıyorum."
+                note: "Bu kolyeyi boynuna kendi ellerimle takmak için sabırsızlanıyorum."
             },
             { 
                 id: 5, 
@@ -703,7 +706,7 @@
         }
 
         // ==========================================
-        // LEVEL 3: Buz Kulesi Tırmanışı / Ice Tower (Kar Küresi) - Dokunma & Swipe Kontrollü
+        // LEVEL 3: Buz Kulesi Tırmanışı / Ice Tower (Kar Küresi)
         // ==========================================
         function startLevel3(container) {
             container.innerHTML = `
@@ -773,7 +776,6 @@
 
             btnJump.onclick = doJump;
 
-            // Touch Press / Mouse Controls
             const startL = () => { keys.left = true; };
             const stopL = () => { keys.left = false; };
             const startR = () => { keys.right = true; };
@@ -789,7 +791,6 @@
             btnRight.addEventListener('mousedown', startR);
             btnRight.addEventListener('mouseup', stopR);
 
-            // Canvas Direct Touch Swipe Movement
             canvas.addEventListener('touchstart', (e) => {
                 const touchX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
                 if (touchX < canvas.width / 2) { keys.left = true; keys.right = false; }
@@ -1085,7 +1086,7 @@
         }
 
         // ==========================================
-        // LEVEL 6: Geliştirilmiş Dino Koşusu (Ceket)
+        // LEVEL 6: Geliştirilmiş Engelli Koşu (Ceket)
         // ==========================================
         function startLevel6(container) {
             container.innerHTML = `
@@ -1099,7 +1100,8 @@
 
             const canvas = document.getElementById('runnerCanvas');
             const ctx = canvas.getContext('2d');
-            let playerY = 148;
+            const groundY = 195;
+            let playerY = groundY;
             let velocityY = 0;
             let isJumping = false;
             let obstacleX = 280;
@@ -1122,23 +1124,23 @@
                 if(!gameActive) return;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Animated Floor Line
+                // Floor Line
                 ctx.strokeStyle = '#f472b6';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.moveTo(0, 180);
-                ctx.lineTo(280, 180);
+                ctx.moveTo(0, groundY);
+                ctx.lineTo(280, groundY);
                 ctx.stroke();
 
                 velocityY += 0.7;
                 playerY += velocityY;
-                if(playerY >= 148) {
-                    playerY = 148;
+                if(playerY >= groundY) {
+                    playerY = groundY;
                     isJumping = false;
                 }
 
-                ctx.font = "26px serif";
-                ctx.fillText("💃", 25, playerY);
+                ctx.font = "24px serif";
+                ctx.fillText("💃", 25, playerY - 3);
 
                 obstacleX -= obstacleSpeed;
                 if(obstacleX < -20) {
@@ -1153,9 +1155,9 @@
                 }
                 
                 ctx.font = "22px serif";
-                ctx.fillText("📦", obstacleX, 175);
+                ctx.fillText("📦", obstacleX, groundY - 2);
 
-                if(obstacleX > 15 && obstacleX < 45 && playerY > 125) {
+                if(obstacleX > 15 && obstacleX < 45 && playerY > groundY - 25) {
                     playSound('fail');
                     gameActive = false;
                     alert("Engele takıldın güzelim! Tekrar dene.");
