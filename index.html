@@ -350,6 +350,21 @@
             }
         }
 
+        // Global Loop Tracker to prevent ghosts from running in the background
+        let activeIntervals = [];
+        let activeAnimationFrame = null;
+
+        function clearAllGameLoops() {
+            activeIntervals.forEach(id => clearInterval(id));
+            activeIntervals = [];
+            if (activeAnimationFrame) {
+                cancelAnimationFrame(activeAnimationFrame);
+                activeAnimationFrame = null;
+            }
+            window.onkeydown = null;
+            window.onkeyup = null;
+        }
+
         // Game Configurations & Custom Gifts
         const LEVELS = [
             { 
@@ -453,6 +468,7 @@
         }
 
         function loadLevel(levelId) {
+            clearAllGameLoops();
             activeLevelView = levelId;
             renderLevelSelector();
             const gameArea = document.getElementById('gameArea');
@@ -471,6 +487,7 @@
         }
 
         function unlockNextLevel(completedLevel) {
+            clearAllGameLoops();
             playSound('victory');
             confetti({
                 particleCount: 200,
@@ -515,6 +532,7 @@
         function resetProgress() {
             playSound('pop');
             if(confirm("Tüm bölümleri sıfırlayıp baştan oynamak ister misin Özden?")) {
+                clearAllGameLoops();
                 localStorage.removeItem('unlockedLevel_ozden_v4');
                 currentLevel = 1;
                 loadLevel(1);
@@ -564,7 +582,7 @@
             }
 
             function update() {
-                const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+                const head = {x: snake[0].x + dx, y: snake[Head.y] + dy};
 
                 if (head.x < 0) head.x = canvas.width - grid;
                 if (head.x >= canvas.width) head.x = 0;
@@ -578,7 +596,7 @@
                     score++;
                     document.getElementById('snakeScore').innerText = score;
                     if (score >= 5) {
-                        clearInterval(gameInterval);
+                        clearAllGameLoops();
                         setTimeout(() => unlockNextLevel(1), 300);
                         return;
                     }
@@ -613,6 +631,7 @@
             }
 
             gameInterval = setInterval(update, 130);
+            activeIntervals.push(gameInterval);
 
             const handleDir = (dir) => {
                 if(dir==='UP' && dy===0){ dx=0; dy=-grid; }
@@ -750,7 +769,6 @@
             let targetFloor = 15;
             let gameActive = true;
             let cameraY = 0;
-            let animationFrameId;
 
             let floors = [{ id: 0, x: 20, y: 240, width: 240 }];
             for (let i = 1; i <= 25; i++) {
@@ -855,7 +873,7 @@
 
                                 if (currentFloor >= targetFloor) {
                                     gameActive = false;
-                                    cancelAnimationFrame(animationFrameId);
+                                    clearAllGameLoops();
                                     setTimeout(() => unlockNextLevel(3), 300);
                                     return;
                                 }
@@ -867,7 +885,7 @@
                 if (player.y + cameraY > canvas.height + 40) {
                     playSound('fail');
                     gameActive = false;
-                    cancelAnimationFrame(animationFrameId);
+                    clearAllGameLoops();
                     alert("Ayy düştün Özden'im! Odaklanıp tekrar tırman, yapabilirsin ❤️");
                     startLevel3(container);
                     return;
@@ -898,7 +916,7 @@
                 ctx.font = "20px serif";
                 ctx.fillText("👸", player.x - 2, renderPlayerY + 18);
 
-                if (gameActive) animationFrameId = requestAnimationFrame(gameLoop);
+                if (gameActive) activeAnimationFrame = requestAnimationFrame(gameLoop);
             }
 
             gameLoop();
@@ -987,6 +1005,7 @@
                         userStep++;
                         if (userStep === sequence.length) {
                             if (sequence.length >= targetLength) {
+                                clearAllGameLoops();
                                 setTimeout(() => unlockNextLevel(4), 500);
                             } else {
                                 nextRound();
@@ -1053,6 +1072,7 @@
                         if(item.isBomb) {
                             playSound('fail');
                             gameActive = false;
+                            clearAllGameLoops();
                             alert("Eyvah bomba patladı! Tekrar dene hayatım ❤️");
                             startLevel5(container);
                         } else {
@@ -1061,6 +1081,7 @@
                             score++;
                             if(score >= 7) {
                                 gameActive = false;
+                                clearAllGameLoops();
                                 unlockNextLevel(5);
                             }
                         }
@@ -1069,7 +1090,7 @@
                     }
                 });
 
-                if(gameActive) requestAnimationFrame(update);
+                if(gameActive) activeAnimationFrame = requestAnimationFrame(update);
             }
 
             const handleMove = (e) => {
@@ -1149,6 +1170,7 @@
                     passedCount++;
                     if(passedCount >= 6) {
                         gameActive = false;
+                        clearAllGameLoops();
                         unlockNextLevel(6);
                         return;
                     }
@@ -1160,12 +1182,13 @@
                 if(obstacleX > 15 && obstacleX < 45 && playerY > groundY - 25) {
                     playSound('fail');
                     gameActive = false;
+                    clearAllGameLoops();
                     alert("Engele takıldın güzelim! Tekrar dene.");
                     startLevel6(container);
                     return;
                 }
 
-                if(gameActive) requestAnimationFrame(update);
+                if(gameActive) activeAnimationFrame = requestAnimationFrame(update);
             }
 
             update();
@@ -1200,9 +1223,11 @@
                 if(pos >= 95 || pos <= 0) dir *= -1;
                 pin.style.left = `${pos}%`;
             }, 16);
+            activeIntervals.push(interval);
 
             document.getElementById('stopBtn').onclick = () => {
                 clearInterval(interval);
+                clearAllGameLoops();
                 if(pos >= 43 && pos <= 57) {
                     unlockNextLevel(7);
                 } else {
@@ -1241,7 +1266,6 @@
             let gameActive = true;
             let lasers = [];
             let asteroids = [];
-            let animationFrameId;
 
             function spawnAsteroid() {
                 if (!gameActive) return;
@@ -1312,7 +1336,7 @@
 
                             if (score >= targetScore) {
                                 gameActive = false;
-                                cancelAnimationFrame(animationFrameId);
+                                clearAllGameLoops();
                                 setTimeout(() => unlockNextLevel(8), 300);
                                 return;
                             }
@@ -1322,7 +1346,7 @@
                     if (a.y > canvas.height - 35 && Math.abs(a.x - playerX) < 22) {
                         playSound('fail');
                         gameActive = false;
-                        cancelAnimationFrame(animationFrameId);
+                        clearAllGameLoops();
                         alert("Asteroide çarptın Özden'im! Gemiyi dikkatli sür, tekrar dene ❤️");
                         startLevel8(container);
                         return;
@@ -1336,7 +1360,7 @@
                 ctx.font = "26px serif";
                 ctx.fillText("🚀", playerX - 13, canvas.height - 8);
 
-                if (gameActive) animationFrameId = requestAnimationFrame(update);
+                if (gameActive) activeAnimationFrame = requestAnimationFrame(update);
             }
 
             update();
