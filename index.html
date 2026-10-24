@@ -386,7 +386,7 @@
             { 
                 id: 3, 
                 title: "3. Bölüm: Buz Kulesi Tırmanışı", 
-                reward: "Büyülü Kar Küresi", 
+                reward: "Büyülü Kar Küresi 🔮", 
                 icon: "fa-snowflake", 
                 desc: "İçinde kendi romantik masalımızın döndüğü ışıl ışıl büyüleyici bir kar küresi!",
                 note: "Buz kulesini zirveye kadar tırmandın! Tıpkı aşkımız gibi yükseklerde."
@@ -582,7 +582,7 @@
             }
 
             function update() {
-                const head = {x: snake[0].x + dx, y: snake[Head.y] + dy};
+                const head = {x: snake[0].x + dx, y: snake[0].y + dy};
 
                 if (head.x < 0) head.x = canvas.width - grid;
                 if (head.x >= canvas.width) head.x = 0;
