@@ -210,7 +210,30 @@
                 </div>
             </div>
             <button onclick="closeRewardModal()" class="w-full mt-5 py-3.5 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:opacity-90 text-white font-bold rounded-xl shadow-lg shadow-pink-500/30 transition active:scale-95 text-sm">
-                Sonraki Seviyeye Geç <i class="fa-solid fa-arrow-right ml-1"></i>
+                <span id="rewardBtnText">Sonraki Seviyeye Geç <i class="fa-solid fa-arrow-right ml-1"></i></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Final Grand Celebration Modal -->
+    <div id="grandFinalModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-lg flex items-center justify-center p-4 z-50 hidden">
+        <div class="glass-panel max-w-sm w-full p-6 rounded-3xl text-center border-2 border-pink-500/70 shadow-2xl relative">
+            <div class="w-20 h-20 bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 rounded-3xl flex items-center justify-center mx-auto mb-3 text-white text-4xl shadow-xl shadow-pink-500/50 animate-bounce">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+            <h2 class="title-font text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-rose-300 to-amber-200 mb-2">
+                ŞAMPİYON ÖZDEN! 👑
+            </h2>
+            <div class="space-y-3 text-slate-200 text-xs leading-relaxed my-4">
+                <p class="font-semibold text-pink-300 text-sm">
+                    Tebrik ederim bir tanem! Bütün 8 zorlu bölümü geçtin ve tüm hediyeleri kaptın! 🎉🎁
+                </p>
+                <div class="p-3 bg-rose-950/40 rounded-2xl border border-rose-500/30 italic text-slate-300">
+                    "Seni çok ama çok seviyorum sevgilim. İyi ki doğdun, birlikte nice mutlu, güzel ve aşk dolu yaşlara! İyi ki varsın Özden'im ❤️✨"
+                </div>
+            </div>
+            <button onclick="document.getElementById('grandFinalModal').classList.add('hidden')" class="w-full py-3.5 bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 hover:opacity-90 text-white font-bold rounded-xl shadow-lg shadow-pink-500/40 text-sm">
+                Seni Çok Seviyorum! ❤️
             </button>
         </div>
     </div>
@@ -356,7 +379,7 @@
                 reward: "Işıl Işıl Kolye 💎", 
                 icon: "fa-gem", 
                 desc: "Güzelliğine güzellik katacak, boynuna çok yakışacak zarafette harika bir kolye!",
-                note: "Bu kolyeyi boynuna kendi ellerimle takmak için sabırsızlanıyorum."
+                note: "Bu kolyeyi boynuna kendi hands'imle takmak için sabırsızlanıyorum."
             },
             { 
                 id: 5, 
@@ -447,8 +470,8 @@
         function unlockNextLevel(completedLevel) {
             playSound('victory');
             confetti({
-                particleCount: 160,
-                spread: 100,
+                particleCount: 200,
+                spread: 120,
                 origin: { y: 0.6 },
                 colors: ['#f472b6', '#fb7185', '#e879f9', '#f59e0b', '#ffffff']
             });
@@ -458,6 +481,13 @@
             document.getElementById('rewardTitle').innerText = `Açılan Hediye: ${lvlData.reward}`;
             document.getElementById('rewardDesc').innerText = lvlData.desc;
             document.getElementById('rewardNote').innerText = `"${lvlData.note}"`;
+            
+            if (completedLevel === 8) {
+                document.getElementById('rewardBtnText').innerHTML = `Büyük Kutlamayı Gör! 👑`;
+            } else {
+                document.getElementById('rewardBtnText').innerHTML = `Sonraki Seviyeye Geç <i class="fa-solid fa-arrow-right ml-1"></i>`;
+            }
+
             document.getElementById('rewardModal').classList.remove('hidden');
 
             if (completedLevel >= currentLevel && currentLevel <= 8) {
@@ -469,7 +499,10 @@
         function closeRewardModal() {
             playSound('pop');
             document.getElementById('rewardModal').classList.add('hidden');
-            if (activeLevelView < 8) {
+            if (activeLevelView === 8) {
+                confetti({ particleCount: 300, spread: 160, origin: { y: 0.4 } });
+                document.getElementById('grandFinalModal').classList.remove('hidden');
+            } else if (activeLevelView < 8) {
                 loadLevel(activeLevelView + 1);
             } else {
                 renderLevelSelector();
@@ -486,7 +519,7 @@
         }
 
         // ==========================================
-        // LEVEL 1: Hızlı Yılan Avı (Çorap) - Düzeltilmiş Çarpışma & Hassas Grid
+        // LEVEL 1: Hızlı Yılan Avı (Çorap)
         // ==========================================
         function startLevel1(container) {
             container.innerHTML = `
@@ -537,7 +570,6 @@
 
                 snake.unshift(head);
 
-                // Precise Hit Check
                 if (head.x === food.x && head.y === food.y) {
                     playSound('pop');
                     score++;
@@ -555,7 +587,6 @@
                 ctx.fillStyle = '#0f172a';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Draw Grid Dots for visual clarity
                 ctx.fillStyle = 'rgba(244, 114, 182, 0.1)';
                 for (let x = 10; x < canvas.width; x += grid) {
                     for (let y = 10; y < canvas.height; y += grid) {
@@ -563,7 +594,6 @@
                     }
                 }
 
-                // Render Food (Socks 🧦)
                 ctx.fillStyle = '#fb7185';
                 ctx.beginPath();
                 ctx.roundRect(food.x + 2, food.y + 2, grid - 4, grid - 4, 4);
@@ -571,7 +601,6 @@
                 ctx.font = "14px serif";
                 ctx.fillText("🧦", food.x + 1, food.y + 15);
 
-                // Render Snake
                 snake.forEach((part, index) => {
                     ctx.fillStyle = index === 0 ? '#f472b6' : '#ec4899';
                     ctx.beginPath();
@@ -594,7 +623,6 @@
             document.getElementById('btnLeft').onclick = () => handleDir('LEFT');
             document.getElementById('btnRight').onclick = () => handleDir('RIGHT');
 
-            // Touch Swipe Controls
             let touchStartX = 0, touchStartY = 0;
             canvas.addEventListener('touchstart', (e) => {
                 touchStartX = e.touches[0].clientX;
@@ -675,27 +703,27 @@
         }
 
         // ==========================================
-        // LEVEL 3: Buz Kulesi Tırmanışı / Ice Tower (Kar Küresi)
+        // LEVEL 3: Buz Kulesi Tırmanışı / Ice Tower (Kar Küresi) - Dokunma & Swipe Kontrollü
         // ==========================================
         function startLevel3(container) {
             container.innerHTML = `
                 <div class="text-center mb-1">
                     <span class="text-[10px] bg-cyan-500/20 text-cyan-300 font-bold px-2.5 py-0.5 rounded-full border border-cyan-500/30">HAYATTA KALMA</span>
                     <h3 class="title-font text-base font-bold text-pink-200 mt-1">Bölüm 3: Buz Kulesi Tırmanışı 🔮</h3>
-                    <p class="text-[10px] text-slate-300">Zıplayarak buz basamaklarını tırman! Düşmeden 15. kata ulaş!</p>
+                    <p class="text-[10px] text-slate-300">Ekranın sağ/soluna dokun veya kaydır! 15. kata ulaş!</p>
                     <div class="mt-1 text-xs font-bold text-cyan-300">Şu Anki Kat: <span id="iceFloorScore">0</span> / 15</div>
                 </div>
                 <div class="relative w-full max-w-xs flex flex-col items-center">
                     <canvas id="iceTowerCanvas" width="280" height="260" class="bg-slate-900/90 rounded-2xl border border-cyan-500/30 shadow-inner cursor-pointer"></canvas>
-                    <div class="flex justify-between w-full mt-2 px-4 gap-2">
+                    <div class="flex justify-between w-full mt-2 px-2 gap-2">
                         <button id="btnTowerLeft" class="flex-1 py-2.5 bg-slate-800 hover:bg-cyan-600 rounded-xl text-white active:scale-95 transition border border-slate-700 shadow text-xs font-bold flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-arrow-left"></i> Sol
+                            <i class="fa-solid fa-arrow-left"></i> SOL
                         </button>
                         <button id="btnTowerJump" class="flex-1 py-2.5 bg-cyan-600 hover:bg-cyan-500 rounded-xl text-white active:scale-95 transition border border-cyan-400 shadow text-xs font-bold">
                             ZIPLA 🚀
                         </button>
                         <button id="btnTowerRight" class="flex-1 py-2.5 bg-slate-800 hover:bg-cyan-600 rounded-xl text-white active:scale-95 transition border border-slate-700 shadow text-xs font-bold flex items-center justify-center gap-1">
-                            Sağ <i class="fa-solid fa-arrow-right"></i>
+                            SAĞ <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
                 </div>
@@ -721,12 +749,9 @@
             let cameraY = 0;
             let animationFrameId;
 
-            let floors = [
-                { id: 0, x: 20, y: 240, width: 240 }
-            ];
-
+            let floors = [{ id: 0, x: 20, y: 240, width: 240 }];
             for (let i = 1; i <= 25; i++) {
-                let width = Math.max(60, 110 - i * 2);
+                let width = Math.max(65, 115 - i * 2);
                 let x = Math.random() * (canvas.width - width);
                 let y = 240 - i * 55;
                 floors.push({ id: i, x: x, y: y, width: width });
@@ -742,21 +767,40 @@
                 }
             }
 
-            canvas.onclick = doJump;
-            document.getElementById('btnTowerJump').onclick = doJump;
-
             const btnLeft = document.getElementById('btnTowerLeft');
             const btnRight = document.getElementById('btnTowerRight');
+            const btnJump = document.getElementById('btnTowerJump');
 
-            btnLeft.ontouchstart = (e) => { e.preventDefault(); keys.left = true; };
-            btnLeft.ontouchend = (e) => { e.preventDefault(); keys.left = false; };
-            btnLeft.onmousedown = () => { keys.left = true; };
-            btnLeft.onmouseup = () => { keys.left = false; };
+            btnJump.onclick = doJump;
 
-            btnRight.ontouchstart = (e) => { e.preventDefault(); keys.right = true; };
-            btnRight.ontouchend = (e) => { e.preventDefault(); keys.right = false; };
-            btnRight.onmousedown = () => { keys.right = true; };
-            btnRight.onmouseup = () => { keys.right = false; };
+            // Touch Press / Mouse Controls
+            const startL = () => { keys.left = true; };
+            const stopL = () => { keys.left = false; };
+            const startR = () => { keys.right = true; };
+            const stopR = () => { keys.right = false; };
+
+            btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); startL(); });
+            btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); stopL(); });
+            btnLeft.addEventListener('mousedown', startL);
+            btnLeft.addEventListener('mouseup', stopL);
+
+            btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); startR(); });
+            btnRight.addEventListener('touchend', (e) => { e.preventDefault(); stopR(); });
+            btnRight.addEventListener('mousedown', startR);
+            btnRight.addEventListener('mouseup', stopR);
+
+            // Canvas Direct Touch Swipe Movement
+            canvas.addEventListener('touchstart', (e) => {
+                const touchX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
+                if (touchX < canvas.width / 2) { keys.left = true; keys.right = false; }
+                else { keys.right = true; keys.left = false; }
+                doJump();
+            }, { passive: true });
+
+            canvas.addEventListener('touchend', () => {
+                keys.left = false;
+                keys.right = false;
+            }, { passive: true });
 
             window.onkeydown = (e) => {
                 if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
@@ -772,8 +816,8 @@
             function gameLoop() {
                 if (!gameActive) return;
 
-                if (keys.left) player.vx = -3.8;
-                else if (keys.right) player.vx = 3.8;
+                if (keys.left) player.vx = -4.0;
+                else if (keys.right) player.vx = 4.0;
                 else player.vx *= 0.8;
 
                 player.vy += gravity;
@@ -829,7 +873,6 @@
                 }
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-
                 ctx.fillStyle = "rgba(6, 182, 212, 0.05)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -854,9 +897,7 @@
                 ctx.font = "20px serif";
                 ctx.fillText("👸", player.x - 2, renderPlayerY + 18);
 
-                if (gameActive) {
-                    animationFrameId = requestAnimationFrame(gameLoop);
-                }
+                if (gameActive) animationFrameId = requestAnimationFrame(gameLoop);
             }
 
             gameLoop();
@@ -1044,32 +1085,32 @@
         }
 
         // ==========================================
-        // LEVEL 6: Engelli Koşu (Ceket Zıplama)
+        // LEVEL 6: Geliştirilmiş Dino Koşusu (Ceket)
         // ==========================================
         function startLevel6(container) {
             container.innerHTML = `
                 <div class="text-center mb-1">
                     <span class="text-[10px] bg-red-500/20 text-red-300 font-bold px-2.5 py-0.5 rounded-full border border-red-500/30">ZOR</span>
                     <h3 class="title-font text-base font-bold text-pink-200 mt-0.5">Bölüm 6: Sıcak Ceket Koşusu 🧥</h3>
-                    <p class="text-[10px] text-slate-300">Ekrana dokunarak zıpla! 5 engeli aş!</p>
+                    <p class="text-[10px] text-slate-300">Ekrana dokunarak zıpla! 6 engeli aş!</p>
                 </div>
                 <canvas id="runnerCanvas" width="280" height="220" class="bg-slate-900/90 rounded-2xl border border-pink-500/30 shadow-inner cursor-pointer"></canvas>
             `;
 
             const canvas = document.getElementById('runnerCanvas');
             const ctx = canvas.getContext('2d');
-            let playerY = 150;
+            let playerY = 148;
             let velocityY = 0;
             let isJumping = false;
             let obstacleX = 280;
-            let obstacleSpeed = 3.6;
+            let obstacleSpeed = 4.0;
             let passedCount = 0;
             let gameActive = true;
 
             function jump() {
                 if(!isJumping && gameActive) {
                     playSound('pop');
-                    velocityY = -10.5;
+                    velocityY = -11.5;
                     isJumping = true;
                 }
             }
@@ -1081,35 +1122,38 @@
                 if(!gameActive) return;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+                // Animated Floor Line
                 ctx.strokeStyle = '#f472b6';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 3;
                 ctx.beginPath();
                 ctx.moveTo(0, 180);
                 ctx.lineTo(280, 180);
                 ctx.stroke();
 
-                velocityY += 0.65;
+                velocityY += 0.7;
                 playerY += velocityY;
-                if(playerY >= 150) {
-                    playerY = 150;
+                if(playerY >= 148) {
+                    playerY = 148;
                     isJumping = false;
                 }
 
-                ctx.font = "24px serif";
+                ctx.font = "26px serif";
                 ctx.fillText("💃", 25, playerY);
 
                 obstacleX -= obstacleSpeed;
                 if(obstacleX < -20) {
                     obstacleX = 280;
-                    obstacleSpeed += 0.4;
+                    obstacleSpeed += 0.35;
                     passedCount++;
-                    if(passedCount >= 5) {
+                    if(passedCount >= 6) {
                         gameActive = false;
                         unlockNextLevel(6);
                         return;
                     }
                 }
-                ctx.fillText("📦", obstacleX, 160);
+                
+                ctx.font = "22px serif";
+                ctx.fillText("📦", obstacleX, 175);
 
                 if(obstacleX > 15 && obstacleX < 45 && playerY > 125) {
                     playSound('fail');
@@ -1232,13 +1276,11 @@
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Draw Stars Background
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
                 for (let i = 0; i < 15; i++) {
                     ctx.fillRect((i * 37) % canvas.width, (i * 53 + Date.now() * 0.05) % canvas.height, 2, 2);
                 }
 
-                // Render & Update Lasers
                 lasers.forEach((l, li) => {
                     l.y -= l.speed;
                     ctx.fillStyle = '#38bdf8';
@@ -1250,16 +1292,13 @@
                     if (l.y < -10) lasers.splice(li, 1);
                 });
 
-                // Spawn Asteroids
                 if (Math.random() < 0.035) spawnAsteroid();
 
-                // Render & Update Asteroids
                 asteroids.forEach((a, ai) => {
                     a.y += a.speed;
                     ctx.font = "20px serif";
                     ctx.fillText("☄️", a.x - 10, a.y);
 
-                    // Check Laser Hit
                     lasers.forEach((l, li) => {
                         const dist = Math.hypot(l.x - a.x, l.y - a.y);
                         if (dist < a.size) {
@@ -1278,7 +1317,6 @@
                         }
                     });
 
-                    // Check Player Collision
                     if (a.y > canvas.height - 35 && Math.abs(a.x - playerX) < 22) {
                         playSound('fail');
                         gameActive = false;
@@ -1293,7 +1331,6 @@
                     }
                 });
 
-                // Draw Player Spacecraft
                 ctx.font = "26px serif";
                 ctx.fillText("🚀", playerX - 13, canvas.height - 8);
 
